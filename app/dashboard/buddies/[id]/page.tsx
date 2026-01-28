@@ -25,7 +25,7 @@ export default function BuddyDetailPage() {
   if (error || !buddy) {
     return (
       <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-slate-900">StudyBuddy not found</h2>
+        <h2 className="text-2xl font-bold text-slate-900">MyBuddy not found</h2>
         <p className="text-slate-500 mt-2">The buddy you're looking for doesn't exist or you don't have access.</p>
         <Button className="mt-6" onClick={() => router.push("/dashboard")}>Return to Dashboard</Button>
       </div>

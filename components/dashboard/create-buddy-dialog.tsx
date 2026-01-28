@@ -55,7 +55,7 @@ export function CreateBuddyDialog() {
           <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
              <BrainCircuit className="w-6 h-6 text-primary" />
           </div>
-          <DialogTitle className="text-2xl font-bold text-center">Create StudyBuddy</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-center">Create MyBuddy</DialogTitle>
           <DialogDescription className="text-center">
             Give your AI study companion a name and subject to get started.
           </DialogDescription>

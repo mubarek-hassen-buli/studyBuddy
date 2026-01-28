@@ -108,7 +108,7 @@ export function ChatInterface({ buddyId }: { buddyId: string }) {
                <BrainCircuit className="w-12 h-12 text-slate-300" />
             </div>
             <div>
-               <h3 className="font-black text-slate-900 text-xl tracking-tight">Ask your StudyBuddy</h3>
+               <h3 className="font-black text-slate-900 text-xl tracking-tight">Ask your MyBuddy</h3>
                <p className="text-slate-500 font-medium max-w-xs">Ask specific questions about your uploaded documents or general subject questions.</p>
             </div>
           </div>

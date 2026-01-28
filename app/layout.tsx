@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, DM_Sans } from "next/font/google";
 import "./globals.css";
+import localFont from 'next/font/local';
+
+const grezia = localFont({
+  src: '../public/fonts/GreziaDEMO-Regular.otf',
+  variable: '--font-grezia',
+});
 
 const dmSans = DM_Sans({subsets:['latin'],variable:'--font-sans'});
 
@@ -27,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={dmSans.variable} suppressHydrationWarning>
+    <html lang="en" className={`${dmSans.variable} ${grezia.variable}`} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

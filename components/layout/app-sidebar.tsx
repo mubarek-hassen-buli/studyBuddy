@@ -49,7 +49,7 @@ export function AppSidebar() {
       <SidebarHeader className="h-14 lg:h-[60px] flex items-center px-6 border-b border-slate-100">
         <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-slate-900">
           <BookOpen className="w-6 h-6 text-primary" />
-          <span>Study<span className="text-primary">Buddy</span></span>
+          <span className="text-primary" style={{ fontFamily: 'var(--font-grezia)' }}>MyBuddy</span>
         </div>
       </SidebarHeader>
       

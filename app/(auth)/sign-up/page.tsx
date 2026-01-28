@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { BrainCircuit, Mail, Lock, User, Sparkles, Star } from "lucide-react";
+import Silk from "@/components/Silk";
 
 const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -53,13 +54,15 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-white selection:bg-primary/20">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-transparent selection:bg-primary/20 relative overflow-hidden">
+      <Silk color="#7B7481" speed={0.8} noiseIntensity={0.3} />
+      
       {/* Left side - Form */}
-      <div className="flex flex-col justify-center px-8 sm:px-12 lg:px-24 py-12">
+      <div className="flex flex-col justify-center px-8 sm:px-12 lg:px-24 py-12 z-10 bg-white/80 backdrop-blur-xl border-r border-white/20">
         <div className="max-w-md w-full mx-auto">
           <Link href="/" className="flex items-center gap-2 font-bold text-2xl tracking-tight mb-12">
             <BrainCircuit className="w-8 h-8 text-primary" />
-            <span>Study<span className="text-primary">Buddy</span></span>
+            <span className="text-primary" style={{ fontFamily: 'var(--font-grezia)' }}>MyBuddy</span>
           </Link>
 
           <div className="mb-10">
@@ -136,7 +139,7 @@ export default function SignUpPage() {
       </div>
 
       {/* Right side - Visual/Brand Panel */}
-      <div className="hidden lg:flex flex-col justify-center p-8 bg-slate-50 border-l border-slate-100 relative overflow-hidden">
+      <div className="hidden lg:flex flex-col justify-center p-8 bg-slate-900/10 backdrop-blur-md border-l border-white/10 relative overflow-hidden">
         {/* Decorative elements */}
          <div className="absolute top-0 right-0 p-20 opacity-5 pointer-events-none">
             <BrainCircuit className="w-96 h-96 text-primary" />
@@ -147,7 +150,7 @@ export default function SignUpPage() {
             <div className="aspect-[4/5] bg-slate-900 rounded-[40px] shadow-2xl overflow-hidden p-10 flex flex-col justify-between text-white border border-slate-800">
                 <div>
                    <Sparkles className="w-16 h-16 text-primary mb-8" />
-                   <h2 className="text-4xl font-extrabold mb-4 leading-tight">Empower your <br/>Learning journey</h2>
+                   <h2 className="text-4xl font-extrabold mb-4 leading-tight">Empower your <br/>Learning journey with MyBuddy</h2>
                    <p className="text-slate-400 text-lg">Join a community of smarter students using grounded AI to ace their classes.</p>
                 </div>
                 

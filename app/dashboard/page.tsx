@@ -66,7 +66,7 @@ export default function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-7">
         <div className="col-span-full">
            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Your StudyBuddies</h3>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Your MyBuddies</h3>
            </div>
            <BuddyList />
         </div>

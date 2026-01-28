@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth-store";
 import LandingPage from "@/components/landing-page";
+import Silk from "@/components/Silk";
 
 export default function Page() {
   const { user, isLoading, checkSession } = useAuthStore();
@@ -27,5 +28,10 @@ export default function Page() {
     );
   }
 
-  return <LandingPage />;
+  return (
+    <>
+      <Silk color="#111111" speed={0.5} noiseIntensity={0.5} />
+      <LandingPage />
+    </>
+  );
 }

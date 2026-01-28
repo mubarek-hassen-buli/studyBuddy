@@ -28,7 +28,7 @@ export function BuddyList() {
         </div>
         <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Your Study Squad is Empty</h2>
         <p className="text-slate-500 max-w-md mb-10 text-lg font-medium leading-relaxed">
-          Create your first AI StudyBuddy to start organizing your knowledge, generating quizzes, and mastering your subjects.
+          Create your first AI MyBuddy to start organizing your knowledge, generating quizzes, and mastering your subjects.
         </p>
         <Button 
           size="lg" 

@@ -40,7 +40,7 @@ export default function StudyPage() {
   if (!buddy) {
     return (
       <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-slate-900">StudyBuddy not found</h2>
+        <h2 className="text-2xl font-bold text-slate-900">MyBuddy not found</h2>
         <Button className="mt-6" onClick={() => router.push("/dashboard")}>Return to Dashboard</Button>
       </div>
     );
