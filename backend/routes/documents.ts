@@ -81,6 +81,24 @@ export const documentRoutes = new Elysia({ prefix: "/api/documents" })
         file: t.File()
     })
   })
+  .get("/list-all", async ({ user, set }) => {
+     // Fetch all documents for all study buddies owned by the user
+     return await db.select({
+         id: documents.id,
+         studyBuddyId: documents.studyBuddyId,
+         fileName: documents.fileName,
+         fileType: documents.fileType,
+         fileUrl: documents.fileUrl,
+         fileSize: documents.fileSize,
+         processingStatus: documents.processingStatus,
+         createdAt: documents.createdAt,
+         buddyName: studyBuddies.name
+     })
+     .from(documents)
+     .innerJoin(studyBuddies, eq(documents.studyBuddyId, studyBuddies.id))
+     .where(eq(studyBuddies.userId, user!.id))
+     .orderBy(desc(documents.createdAt));
+  })
   .get("/list/:studyBuddyId", async ({ params: { studyBuddyId }, user, set }) => {
      // Verify ownership
      const buddy = await db.query.studyBuddies.findFirst({
