@@ -38,6 +38,7 @@
     "next": "16.1.5",
     "officegen": "^0.6.5",
     "pdf-parse": "^2.4.5",
+    "pptx-text-parser": "^1.1.1",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",

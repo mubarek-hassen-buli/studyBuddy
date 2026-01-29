@@ -51,9 +51,14 @@ ${prompts[type] || prompts.short}
     const contextText = context.map(c => c.content).join("\n\n");
     
     const prompt = `
-You are a StudyBuddy. Generate ${count} flashcards based on the provided context.
-Return ONLY a valid JSON array of objects with "question" and "answer" fields.
-Do not wrap in markdown code blocks.
+You are a StudyBuddy AI assistant. Your task is to generate ${count} flashcards based ONLY on the provided context.
+
+STRICT RULES:
+1. Grounding: Every flashcard MUST be directly supported by the provided context.
+2. No Hallucinations: Do not invent names, thoughts, or facts not in the text.
+3. No Outside Knowledge: Do not use your general training data to add external information.
+4. Format: Return ONLY a valid JSON array of objects with "question" and "answer" fields.
+5. Content: If the context is insufficient or contains error messages, return an empty array [].
 
 CONTEXT:
 ${contextText}
@@ -81,11 +86,17 @@ ${contextText}
     const contextText = context.map(c => c.content).join("\n\n");
 
     const prompt = `
-You are a StudyBuddy. Generate a quiz with ${count} multiple-choice questions based on the context.
-Return ONLY a valid JSON array of objects. Each object should have:
-- "question": string
-- "options": array of 4 strings
-- "answer": string (must be one of the options)
+You are a StudyBuddy AI assistant. Your task is to generate a quiz with ${count} multiple-choice questions based ONLY on the provided context.
+
+STRICT RULES:
+1. Grounding: Every question and answer choice MUST be derived from the provided context.
+2. No Hallucinations: Do not create fictitious scenarios or characters like "her thoughts" unless explicitly mentioned in the text.
+3. No Outside Knowledge: Use ONLY the information in the CONTEXT.
+4. Format: Return ONLY a valid JSON array of objects. Each object should have:
+   - "question": string
+   - "options": array of 4 strings
+   - "answer": string (must be one of the options)
+5. Content: If the context is missing or irrelevant, return an empty array [].
 
 CONTEXT:
 ${contextText}
