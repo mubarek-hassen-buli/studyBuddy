@@ -147,21 +147,33 @@ export default function SignUpPage() {
          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
 
          <div className="relative z-10 max-w-lg mx-auto">
-            <div className="aspect-[4/5] bg-slate-900 rounded-[40px] shadow-2xl overflow-hidden p-10 flex flex-col justify-between text-white border border-slate-800">
-                <div>
+            <div className="aspect-[4/5] relative rounded-[40px] shadow-2xl overflow-hidden p-10 flex flex-col justify-between text-white border border-slate-800">
+                {/* Background Image with Overlay */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center z-0" 
+                  style={{ backgroundImage: 'url("/images/Study-date.jpg")' }}
+                />
+                <div className="absolute inset-0 bg-slate-900/60 z-10" />
+
+                <div className="relative z-20">
                    <Sparkles className="w-16 h-16 text-primary mb-8" />
                    <h2 className="text-4xl font-extrabold mb-4 leading-tight">Empower your <br/>Learning journey with MyBuddy</h2>
-                   <p className="text-slate-400 text-lg">Join a community of smarter students using grounded AI to ace their classes.</p>
+                   <p className="text-slate-200 text-lg">Join a community of smarter students using grounded AI to ace their classes.</p>
                 </div>
                 
-                <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-3xl">
+                <div className="relative z-20 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-3xl">
                      <div className="flex -space-x-3 mb-6">
-                        {[1,2,3,4].map(i => (
-                            <div key={i} className="h-10 w-10 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-[10px] font-bold">U{i}</div>
+                        {['rody', 'goy', 'hss', 'doe'].map((name) => (
+                             <img 
+                               key={name}
+                               src={`/images/${name}.jpg`} 
+                               alt={name}
+                               className="h-10 w-10 rounded-full border-2 border-slate-900 object-cover bg-slate-800"
+                             />
                         ))}
-                        <div className="h-10 w-10 rounded-full border-2 border-slate-900 bg-primary flex items-center justify-center text-[10px] font-bold">+12k</div>
+                        <div className="h-10 w-10 rounded-full border-2 border-slate-900 bg-primary flex items-center justify-center text-[10px] font-bold text-white shadow-xl">+12k</div>
                      </div>
-                     <p className="text-sm font-medium text-slate-200">"The quiz generation tool is literal magic. I've increased my GPA by 0.5 in just one semester."</p>
+                     <p className="text-sm font-medium text-slate-100">"The quiz generation tool is literal magic. I've increased my GPA by 0.5 in just one semester."</p>
                 </div>
             </div>
          </div>

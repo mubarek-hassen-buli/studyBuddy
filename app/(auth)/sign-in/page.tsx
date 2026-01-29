@@ -140,23 +140,39 @@ export default function SignInPage() {
          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
 
          <div className="relative z-10 max-w-lg mx-auto">
-            <div className="aspect-[4/5] bg-slate-900 rounded-[40px] shadow-2xl overflow-hidden p-10 flex flex-col justify-between text-white border border-slate-800">
-                <div>
+            <div className="aspect-[4/5] relative rounded-[40px] shadow-2xl overflow-hidden p-10 flex flex-col justify-between text-white border border-slate-800">
+                {/* Background Image with Overlay */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center z-0" 
+                  style={{ backgroundImage: 'url("/images/Study-date.jpg")' }}
+                />
+                <div className="absolute inset-0 bg-slate-900/60 z-10" />
+
+                <div className="relative z-20">
                    <BrainCircuit className="w-16 h-16 text-primary mb-8" />
                    <h2 className="text-4xl font-extrabold mb-4 leading-tight">Welcome to <br/>MyBuddy</h2>
-                   <p className="text-slate-400 text-lg">Your AI-powered study companion that stays within your materials.</p>
+                   <p className="text-slate-200 text-lg">Your AI-powered study companion that stays within your materials.</p>
                 </div>
                 
-                <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-3xl">
+                <div className="relative z-20 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-3xl">
                      <div className="flex gap-1 mb-4">
                         {[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 text-primary fill-primary" />)}
                      </div>
-                     <p className="text-sm italic text-slate-300">"This app transformed how I study for my medical exams. The isolated buddies are a game changer."</p>
+                     <p className="text-sm italic text-slate-100 font-medium">"This app transformed how I study for my medical exams. The isolated buddies are a game changer."</p>
                      <div className="mt-6 flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-xs font-bold font-mono">EJ</div>
+                        <div className="flex -space-x-2 mr-2">
+                           {['rody', 'goy', 'hss', 'doe'].map((name) => (
+                             <img 
+                               key={name}
+                               src={`/images/${name}.jpg`} 
+                               alt={name}
+                               className="h-8 w-8 rounded-full border-2 border-slate-900 object-cover"
+                             />
+                           ))}
+                        </div>
                         <div>
                             <p className="text-sm font-bold">Emma J.</p>
-                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Pre-med Student</p>
+                            <p className="text-[10px] text-slate-300 uppercase tracking-widest font-bold">Pre-med Student</p>
                         </div>
                      </div>
                 </div>
