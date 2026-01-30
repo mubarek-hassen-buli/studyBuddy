@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Zap, Brain, ChevronRight, ChevronLeft, RotateCcw, CheckCircle2 } from "lucide-react";
-import { api } from "@/lib/api/client";
+import { useLearningContent } from "@/hooks/use-learning-content";
 
 interface Flashcard {
   question: string;
@@ -12,32 +12,26 @@ interface Flashcard {
 }
 
 export function FlashcardsInterface({ buddyId }: { buddyId: string }) {
-  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+  const { flashcards } = useLearningContent(buddyId);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
 
   const generateFlashcards = async () => {
-    setIsLoading(true);
-    setFlashcards([]);
     setIsFinished(false);
     setCurrentIndex(0);
     try {
-      const response = await api.post("/learning/flashcards", { studyBuddyId: buddyId, count: 10 }) as { flashcards: Flashcard[] };
-      setFlashcards(response.flashcards);
+      await flashcards.generate.mutateAsync(10);
     } catch (error) {
       console.error("Flashcards error:", error);
       alert("Failed to generate flashcards.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const nextCard = () => {
     setIsFlipped(false);
     setTimeout(() => {
-      if (currentIndex < flashcards.length - 1) {
+      if (currentIndex < flashcards.data.length - 1) {
         setCurrentIndex(currentIndex + 1);
       } else {
         setIsFinished(true);
@@ -54,7 +48,7 @@ export function FlashcardsInterface({ buddyId }: { buddyId: string }) {
     }
   };
 
-  if (isLoading) {
+  if (flashcards.isLoading || flashcards.generate.isPending) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center animate-in fade-in duration-500">
         <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-8 relative">
@@ -67,7 +61,7 @@ export function FlashcardsInterface({ buddyId }: { buddyId: string }) {
     );
   }
 
-  if (flashcards.length === 0 || isFinished) {
+  if (flashcards.data.length === 0 || isFinished) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center space-y-8 bg-white rounded-3xl border border-slate-100 shadow-sm px-6">
         <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center">
@@ -94,8 +88,8 @@ export function FlashcardsInterface({ buddyId }: { buddyId: string }) {
     );
   }
 
-  const currentCard = flashcards[currentIndex];
-  const progress = ((currentIndex + 1) / flashcards.length) * 100;
+  const currentCard = flashcards.data[currentIndex];
+  const progress = ((currentIndex + 1) / flashcards.data.length) * 100;
 
   return (
     <div className="max-w-3xl mx-auto space-y-12">
@@ -104,7 +98,7 @@ export function FlashcardsInterface({ buddyId }: { buddyId: string }) {
         <div className="flex justify-between items-end">
            <div>
               <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Active Recall Session</p>
-              <h3 className="text-xl font-black text-slate-900 tracking-tight">Card {currentIndex + 1} of {flashcards.length}</h3>
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">Card {currentIndex + 1} of {flashcards.data.length}</h3>
            </div>
            <p className="text-sm font-black text-primary">{Math.round(progress)}%</p>
         </div>
@@ -172,7 +166,7 @@ export function FlashcardsInterface({ buddyId }: { buddyId: string }) {
               onClick={nextCard}
               className="rounded-full px-12 h-16 text-lg font-black shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all gap-2"
             >
-              {currentIndex < flashcards.length - 1 ? (
+              {currentIndex < flashcards.data.length - 1 ? (
                 <>
                   Got it! <ChevronRight className="w-5 h-5 ml-1" />
                 </>

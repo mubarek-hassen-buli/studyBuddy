@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, GraduationCap, CheckCircle2, XCircle, ChevronRight, Trophy, RefreshCw } from "lucide-react";
-import { api } from "@/lib/api/client";
+import { useLearningContent } from "@/hooks/use-learning-content";
 
 interface Question {
   question: string;
@@ -13,30 +13,27 @@ interface Question {
 }
 
 export function QuizInterface({ buddyId }: { buddyId: string }) {
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const { quizzes } = useLearningContent(buddyId);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
 
+  // Use the most recent quiz questions
+  const questions = (quizzes.data[0]?.questions as Question[]) || [];
+
   const generateQuiz = async () => {
-    setIsLoading(true);
-    setQuestions([]);
     setIsFinished(false);
     setCurrentIndex(0);
     setSelectedOption(null);
     setIsAnswered(false);
     setScore(0);
     try {
-      const response = await api.post("/learning/quiz", { studyBuddyId: buddyId }) as { quiz: Question[] };
-      setQuestions(response.quiz);
+      await quizzes.generate.mutateAsync(undefined);
     } catch (error) {
       console.error("Quiz error:", error);
       alert("Failed to generate quiz.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -64,7 +61,7 @@ export function QuizInterface({ buddyId }: { buddyId: string }) {
     }
   };
 
-  if (isLoading) {
+  if (quizzes.isLoading || quizzes.generate.isPending) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center">
         <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-8">

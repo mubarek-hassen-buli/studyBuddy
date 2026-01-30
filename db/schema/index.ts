@@ -5,5 +5,6 @@ export * from "./chunks";
 export * from "./messages";
 export * from "./flashcards";
 export * from "./quizzes";
+export * from "./summaries";
 export * from "./usage";
 export * from "./relations";

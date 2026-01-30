@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, FileText, Zap, BookOpen, GraduationCap, Copy, Check } from "lucide-react";
-import { api } from "@/lib/api/client";
+import { useLearningContent } from "@/hooks/use-learning-content";
 
 type SummaryType = "short" | "detailed" | "key_concepts" | "exam";
 
@@ -17,27 +17,24 @@ const types: { id: SummaryType; label: string; icon: any; description: string }[
 
 export function SummarizeInterface({ buddyId }: { buddyId: string }) {
   const [selectedType, setSelectedType] = useState<SummaryType>("short");
-  const [summary, setSummary] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { summaries } = useLearningContent(buddyId);
+
+  // Get the most recent summary of the selected type
+  const currentSummary = summaries.data.find((s: any) => s.type === selectedType);
 
   const generateSummary = async () => {
-    setIsLoading(true);
-    setSummary(null);
     try {
-      const response = await api.post("/learning/summarize", { studyBuddyId: buddyId, type: selectedType }) as { summary: string };
-      setSummary(response.summary);
+      await summaries.generate.mutateAsync(selectedType);
     } catch (error) {
       console.error("Summarize error:", error);
       alert("Failed to generate summary. Make sure you have uploaded documents.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const copyToClipboard = () => {
-    if (!summary) return;
-    navigator.clipboard.writeText(summary);
+    if (!currentSummary) return;
+    navigator.clipboard.writeText(currentSummary.content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -74,15 +71,15 @@ export function SummarizeInterface({ buddyId }: { buddyId: string }) {
         <Button 
           size="lg" 
           onClick={generateSummary} 
-          disabled={isLoading}
+          disabled={summaries.isLoading || summaries.generate.isPending}
           className="rounded-full px-12 py-8 text-xl font-black shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
         >
-          {isLoading ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : <Zap className="w-6 h-6 mr-3" />}
-          Generate Summary
+          {summaries.generate.isPending ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : <Zap className="w-6 h-6 mr-3" />}
+          {currentSummary ? "Regenerate Summary" : "Generate Summary"}
         </Button>
       </div>
 
-      {summary && (
+      {currentSummary && (
         <Card className="bg-white border-slate-200 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
           <CardHeader className="bg-slate-50/50 border-b border-slate-100 flex flex-row items-center justify-between">
             <div>
@@ -97,14 +94,14 @@ export function SummarizeInterface({ buddyId }: { buddyId: string }) {
           <CardContent className="p-8">
             <div className="prose prose-slate max-w-none">
                <div className="whitespace-pre-wrap text-slate-700 leading-relaxed font-medium">
-                  {summary}
+                  {currentSummary.content}
                </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {isLoading && (
+      {summaries.generate.isPending && (
         <div className="flex flex-col items-center justify-center py-20 animate-pulse text-center">
            <div className="w-16 h-16 rounded-3xl bg-slate-100 mb-6 flex items-center justify-center">
               <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
