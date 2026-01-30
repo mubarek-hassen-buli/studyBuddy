@@ -105,7 +105,7 @@ export function QuizInterface({ buddyId }: { buddyId: string }) {
           <div className="space-y-4">
              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Ready to Test Your Knowledge?</h2>
              <p className="text-slate-500 max-w-md mx-auto font-medium leading-relaxed">
-               We'll generate a 5-question multiple-choice quiz to challenge your understanding of the material.
+               We'll generate a 10-question multiple-choice quiz to challenge your understanding of the material.
              </p>
              <div className="pt-8">
                 <Button 

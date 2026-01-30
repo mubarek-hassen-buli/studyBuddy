@@ -15,15 +15,8 @@ export const embeddingService = {
     }
   },
 
-  // Generate embeddings for a batch of texts
-  // Note: Gemini API might have rate limits or batch limits.
-  // We'll iterate for now to be safe, or use batch methods if available in SDK.
+  // Generate embeddings for a batch of texts in parallel
   embedBatch: async (texts: string[]): Promise<number[][]> => {
-      const embeddings: number[][] = [];
-      for (const text of texts) {
-          // Add small delay to avoid rate limits if necessary
-          embeddings.push(await embeddingService.embedText(text));
-      }
-      return embeddings;
+    return await Promise.all(texts.map(text => embeddingService.embedText(text)));
   }
 };

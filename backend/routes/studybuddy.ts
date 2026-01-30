@@ -2,8 +2,9 @@ import { Elysia, t } from "elysia";
 import { auth } from "../auth";
 import { db } from "../../db";
 import { studyBuddies } from "../../db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, count } from "drizzle-orm";
 import { createStudyBuddySchema, updateStudyBuddySchema } from "../../lib/validators/studybuddy";
+import { users } from "../../db/schema";
 import { rateLimiter } from "../middleware/rate-limiter";
 import { qdrantService } from "../services/qdrant";
 
@@ -54,6 +55,16 @@ export const studyBuddyRoutes = new Elysia({ prefix: "/api/studybuddy" })
 
       const { name, subject, description } = parsed.data;
       
+      // --- LIMIT CHECK ---
+      const [dbUser] = await db.select({ tier: users.tier }).from(users).where(eq(users.id, user!.id));
+      const buddyCount = await db.select({ value: count() }).from(studyBuddies).where(eq(studyBuddies.userId, user!.id));
+      
+      if (dbUser?.tier === "free" && Number(buddyCount[0].value) >= 3) {
+        set.status = 403;
+        return { message: "Free tier limit reached (Max 3 StudyBuddies). Upgrade to Pro for unlimited buddies." };
+      }
+      // -------------------
+
       // Generate isolated Qdrant collection name
       const qdrantCollectionName = `sb_${user!.id}_${Date.now()}`;
 
@@ -86,6 +97,16 @@ export const studyBuddyRoutes = new Elysia({ prefix: "/api/studybuddy" })
 
       const { name, subject, description } = parsed.data;
       
+      // --- LIMIT CHECK ---
+      const [dbUser] = await db.select({ tier: users.tier }).from(users).where(eq(users.id, user!.id));
+      const buddyCount = await db.select({ value: count() }).from(studyBuddies).where(eq(studyBuddies.userId, user!.id));
+      
+      if (dbUser?.tier === "free" && Number(buddyCount[0].value) >= 3) {
+        set.status = 403;
+        return { message: "Free tier limit reached (Max 3 StudyBuddies). Upgrade to Pro for unlimited buddies." };
+      }
+      // -------------------
+
       // Generate isolated Qdrant collection name
       const qdrantCollectionName = `sb_${user!.id}_${Date.now()}`;
 

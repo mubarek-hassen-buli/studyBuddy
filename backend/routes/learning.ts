@@ -2,12 +2,11 @@ import { Elysia, t } from "elysia";
 import { auth } from "../auth";
 import { db } from "../../db";
 import { studyBuddies } from "../../db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc, count as sqlCount } from "drizzle-orm";
 import { learningModesService } from "../services/learning-modes";
 import { rateLimiter } from "../middleware/rate-limiter";
 
-import { flashcards, quizzes, summaries as summariesTable } from "../../db/schema";
-import { desc } from "drizzle-orm";
+import { flashcards, quizzes, summaries as summariesTable, users } from "../../db/schema";
 
 export const learningRoutes = new Elysia({ prefix: "/api/learning" })
   .use(rateLimiter({ limit: 20, window: 60 }))
@@ -107,6 +106,16 @@ export const learningRoutes = new Elysia({ prefix: "/api/learning" })
         return "StudyBuddy has no knowledge base";
     }
 
+    // --- LIMIT CHECK ---
+    const [dbUser] = await db.select({ tier: users.tier }).from(users).where(eq(users.id, user!.id));
+    const cardCount = await db.select({ value: sqlCount() }).from(flashcards).where(eq(flashcards.studyBuddyId, studyBuddyId));
+    
+    if (dbUser?.tier === "free" && Number(cardCount[0].value) >= 10) {
+      set.status = 403;
+      return { message: "Free tier limit reached (Max 10 Flashcards per Buddy). Upgrade to Pro for unlimited generation." };
+    }
+    // -------------------
+
     try {
         const cards = await learningModesService.generateFlashcards(buddy.qdrantCollectionName, count || 5);
         
@@ -167,8 +176,18 @@ export const learningRoutes = new Elysia({ prefix: "/api/learning" })
         return "StudyBuddy has no knowledge base";
     }
 
+    // --- LIMIT CHECK ---
+    const [dbUser] = await db.select({ tier: users.tier }).from(users).where(eq(users.id, user!.id));
+    const quizCount = await db.select({ value: sqlCount() }).from(quizzes).where(eq(quizzes.studyBuddyId, studyBuddyId));
+    
+    if (dbUser?.tier === "free" && Number(quizCount[0].value) >= 10) {
+      set.status = 403;
+      return { message: "Free tier limit reached (Max 10 Quizzes per Buddy). Upgrade to Pro for unlimited generation." };
+    }
+    // -------------------
+
     try {
-        const quizData = await learningModesService.generateQuiz(buddy.qdrantCollectionName, topic);
+        const quizData = await learningModesService.generateQuiz(buddy.qdrantCollectionName, topic, 10);
         
         // Persist quiz
         if (quizData && quizData.length > 0) {

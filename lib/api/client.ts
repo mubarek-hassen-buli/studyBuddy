@@ -22,14 +22,18 @@ async function fetcher(endpoint: string, options: RequestInit = {}) {
     const errorText = await response.text();
     console.error(`API Error [${response.status}]:`, errorText);
     
-    let error;
+    let data;
     try {
-      error = JSON.parse(errorText);
+      data = JSON.parse(errorText);
     } catch {
-      error = { message: errorText || "An error occurred" };
+      data = { message: errorText || "An error occurred" };
     }
     
-    throw new Error(error.message || `Request failed with status ${response.status}`);
+    // Throw an object that the TanStack Query onError can use
+    const error = new Error(data.message || `Request failed with status ${response.status}`);
+    (error as any).status = response.status;
+    (error as any).data = data;
+    throw error;
   }
 
   return response.json();

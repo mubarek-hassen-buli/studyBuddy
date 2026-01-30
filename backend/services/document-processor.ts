@@ -53,16 +53,18 @@ export const processDocument = async (documentId: string, fileBuffer: Buffer, fi
     // 4. Update chunk count in DB
     await db.update(documents).set({ chunkCount: textChunks.length }).where(eq(documents.id, documentId));
 
-    // 5. Generate embeddings & Store in Qdrant
-    console.log(`Generating embeddings for ${textChunks.length} chunks...`);
+    // 5. Generate embeddings & Store in Qdrant in parallel
+    console.log(`Generating embeddings for ${textChunks.length} chunks in parallel...`);
     
-    // Process in batches if necessary, but here we iterate
+    // Generate all embeddings concurrently
+    const embeddings = await Promise.all(textChunks.map(chunk => embeddingService.embedText(chunk)));
+
     const chunkRecords = [];
     const points = [];
 
     for (let i = 0; i < textChunks.length; i++) {
         const content = textChunks[i];
-        const embedding = await embeddingService.embedText(content);
+        const embedding = embeddings[i];
         const pointId = crypto.randomUUID();
 
         chunkRecords.push({
@@ -70,7 +72,7 @@ export const processDocument = async (documentId: string, fileBuffer: Buffer, fi
             content,
             chunkIndex: i,
             qdrantPointId: pointId,
-            metadata: { page: 1 }, // TODO: Better metadata extraction
+            metadata: { page: 1 }, 
         });
 
         points.push({
