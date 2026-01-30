@@ -45,6 +45,16 @@ export const documentRoutes = new Elysia({ prefix: "/api/documents" })
         return "StudyBuddy not found";
     }
 
+    // NEW: Check if document already exists for this Buddy
+    const existingDoc = await db.query.documents.findFirst({
+        where: eq(documents.studyBuddyId, studyBuddyId)
+    });
+
+    if (existingDoc) {
+        set.status = 400;
+        return "Limit Reached: Only one document allowed per StudyBuddy.";
+    }
+
     // Upload to ImageKit
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
