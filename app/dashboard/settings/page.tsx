@@ -1,18 +1,43 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/auth-store";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Settings, User, Mail, Shield, Bell, Moon, LogOut } from "lucide-react";
+import { Settings, User, Mail, Shield, Bell, Moon, LogOut, Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
-  const { user } = useAuthStore();
+  const { user, checkSession } = useAuthStore();
+  const [name, setName] = useState(user?.name || "");
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    if (user?.name) {
+      setName(user.name);
+    }
+  }, [user?.name]);
 
   const handleSignOut = async () => {
     await authClient.signOut();
     window.location.href = "/sign-in";
+  };
+
+  const handleUpdateProfile = async () => {
+    setIsUpdating(true);
+    try {
+      await authClient.updateUser({
+        name: name,
+      });
+      await checkSession(); // Refresh local session
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      toast.error("Failed to update profile. Please try again.");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -36,19 +61,37 @@ export default function SettingsPage() {
                        <label className="text-sm font-bold text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
                        <div className="relative">
                           <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                          <Input defaultValue={user?.name || ""} className="pl-11 py-6 rounded-2xl border-slate-200" readOnly />
+                          <Input 
+                            value={name} 
+                            onChange={(e) => setName(e.target.value)}
+                            className="pl-11 py-6 rounded-2xl border-slate-200 focus-visible:ring-primary" 
+                          />
                        </div>
                     </div>
                     <div className="space-y-2">
                        <label className="text-sm font-bold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
                        <div className="relative">
                           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                          <Input defaultValue={user?.email || ""} className="pl-11 py-6 rounded-2xl border-slate-200" readOnly />
+                          <Input defaultValue={user?.email || ""} className="pl-11 py-6 rounded-2xl border-slate-200 bg-slate-50" readOnly />
                        </div>
                     </div>
                  </div>
                  <div className="pt-4">
-                    <Button className="rounded-xl px-8 py-6 font-bold" variant="secondary">Update Profile</Button>
+                    <Button 
+                      onClick={handleUpdateProfile} 
+                      disabled={isUpdating}
+                      className="rounded-xl px-8 py-6 font-bold shadow-lg hover:shadow-xl" 
+                      variant="secondary"
+                    >
+                      {isUpdating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Updating...
+                        </>
+                      ) : (
+                        "Update Profile"
+                      )}
+                    </Button>
                     <p className="text-xs text-slate-400 mt-4 font-medium italic">Some information is synced from your primary account.</p>
                  </div>
               </CardContent>
@@ -78,20 +121,7 @@ export default function SettingsPage() {
                     </div>
                  </div>
 
-                 <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                    <div className="flex items-center gap-4">
-                       <div className="p-3 bg-white rounded-xl shadow-sm">
-                          <Bell className="w-5 h-5 text-slate-600" />
-                       </div>
-                       <div>
-                          <p className="font-bold text-slate-900">Email Notifications</p>
-                          <p className="text-sm text-slate-500 font-medium">Get updates on your document processing.</p>
-                       </div>
-                    </div>
-                    <div className="w-12 h-6 bg-primary rounded-full relative">
-                       <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full transition-all" />
-                    </div>
-                 </div>
+                
               </CardContent>
            </Card>
         </section>
@@ -108,7 +138,7 @@ export default function SettingsPage() {
                     <h4 className="font-bold text-slate-900">Session Management</h4>
                     <p className="text-sm text-slate-500 font-medium mt-1">Sign out of your current session on this device.</p>
                  </div>
-                 <Button onClick={handleSignOut} variant="destructive" className="rounded-xl px-8 py-6 font-bold bg-red-500 hover:bg-red-600 shadow-lg shadow-red-200">
+                 <Button onClick={handleSignOut} variant="destructive" className="rounded-xl px-8 py-6 font-bold bg-white  shadow-lg ">
                     <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
                  </Button>
