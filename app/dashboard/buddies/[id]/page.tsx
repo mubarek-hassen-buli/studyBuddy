@@ -126,35 +126,7 @@ export default function BuddyDetailPage() {
               </CardContent>
            </Card>
 
-           <Card className="bg-primary/5 border-primary/10 shadow-sm">
-              <CardContent className="p-6">
-                 <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30">
-                       <Clock className="w-5 h-5" />
-                    </div>
-                    <h4 className="font-black text-slate-900 tracking-tight">Buddy Stats</h4>
-                 </div>
-                 <div className="space-y-4">
-                    <div className="flex justify-between items-center text-sm">
-                       <span className="text-slate-500 font-medium">Memory Usage</span>
-                       <span className="text-slate-900 font-black tracking-tight tracking-wider">0/50MB</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                       <div className="h-full bg-primary w-[5%] rounded-full shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 pt-4">
-                       <div className="p-3 bg-white rounded-xl border border-primary/10">
-                          <p className="text-[10px] font-black uppercase text-slate-400">Notes</p>
-                          <p className="text-xl font-black text-slate-900">0</p>
-                       </div>
-                       <div className="p-3 bg-white rounded-xl border border-primary/10">
-                          <p className="text-[10px] font-black uppercase text-slate-400">Score</p>
-                          <p className="text-xl font-black text-slate-900">0%</p>
-                       </div>
-                    </div>
-                 </div>
-              </CardContent>
-           </Card>
+          
         </div>
       </div>
     </div>

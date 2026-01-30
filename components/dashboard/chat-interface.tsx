@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BrainCircuit, Send, Loader2, User, ChevronLeft, Info } from "lucide-react";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
 import { useBuddy } from "@/hooks/use-buddies";
 
 interface Message {
@@ -34,11 +35,22 @@ export function ChatInterface({ buddyId }: { buddyId: string }) {
     setIsLoading(true);
 
     try {
+      const session = await authClient.getSession();
+      const token = session?.data?.session?.token;
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
+        credentials: "include",
         body: JSON.stringify({ studyBuddyId: buddyId, message: userMessage }),
       });
+
+      if (response.status === 401) {
+        throw new Error("Unauthorized");
+      }
 
       if (!response.body) throw new Error("No response body");
 
@@ -52,8 +64,17 @@ export function ChatInterface({ buddyId }: { buddyId: string }) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value);
-        assistantContent += chunk;
+        const chunk = decoder.decode(value, { stream: true });
+        
+        // Parse SSE-style chunks (id: xxx\ndata: yyy\n\n)
+        const lines = chunk.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data:')) {
+            // Extract content: 'data: ' -> line.substring(6), 'data:' -> line.substring(5)
+            const content = line.startsWith('data: ') ? line.substring(6) : line.substring(5);
+            assistantContent += content + (line === 'data:' || line === 'data: ' ? '\n' : '');
+          }
+        }
 
         setMessages((prev) => {
           const newMessages = [...prev];

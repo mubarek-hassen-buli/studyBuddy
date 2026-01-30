@@ -80,6 +80,7 @@ export const processDocument = async (documentId: string, fileBuffer: Buffer, fi
             vector: embedding,
             payload: {
                 documentId,
+                fileName: doc.fileName, // Include fileName for better citations
                 content,
                 chunkIndex: i,
                 studyBuddyId: doc.studyBuddyId

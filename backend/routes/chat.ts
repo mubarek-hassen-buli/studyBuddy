@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { auth } from "../auth";
 import { db } from "../../db";
-import { studyBuddies } from "../../db/schema";
+import { studyBuddies, documents } from "../../db/schema";
 import { eq, and } from "drizzle-orm";
 import { rateLimiter } from "../middleware/rate-limiter";
 import { quotaChecker, incrementQuota } from "../middleware/quota-checker";
@@ -47,6 +47,16 @@ export const chatRoutes = new Elysia({ prefix: "/api/chat" })
     // Retrieve context
     const context = await ragService.retrieveContext(collectionName, message);
 
+    // Metadata Fallback: Populate missing fileNames from DB
+    for (const item of context) {
+        if (!item.metadata.fileName && item.metadata.documentId) {
+            const doc = await db.query.documents.findFirst({
+                where: eq(documents.id, item.metadata.documentId)
+            });
+            if (doc) item.metadata.fileName = doc.fileName;
+        }
+    }
+
     // Stream response
     return new Stream(async (stream) => {
         // Stream chunks from Gemini
@@ -54,16 +64,12 @@ export const chatRoutes = new Elysia({ prefix: "/api/chat" })
             stream.send(chunk);
         }
         
-        // Send sources metadata at the end? 
-        // Stream interface usually just sends text chunks. 
-        // For structured data + stream, we might need a different protocol or send as a final chunk.
-        // For MVP, simplistic text stream.
-        // Or we can send a special delimiter like "\n\nSOURCES:\n" + JSON...
-        
         if (context.length > 0) {
-            stream.send("\n\n---\nSources:\n");
+            stream.send("\n\n---\n**Sources:**\n");
             context.forEach((c, i) => {
-                stream.send(`[${i+1}] ${c.metadata.fileName || "Unknown Document"} (Page ${c.metadata.page || "?"})\n`);
+                const name = c.metadata.fileName || "Relevant Source";
+                const page = c.metadata.page ? ` (Page ${c.metadata.page})` : "";
+                stream.send(`[${i+1}] ${name}${page}\n`);
             });
         }
         
