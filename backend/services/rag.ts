@@ -39,7 +39,7 @@ export const ragService = {
           return "I cannot answer this question because it is not covered in your uploaded study materials.";
       }
 
-      const contextText = contextChunks.map((chunk, i) => `[Source ${i+1}]: ${chunk.content}`).join("\n\n");
+      const contextText = contextChunks.map((chunk) => chunk.content).join("\n\n");
 
       const systemPrompt = `
 You are a professional AI StudyBuddy. Your goal is to provide helpful, organized, and accurate information based ONLY on the provided study materials.
@@ -49,7 +49,7 @@ STRICT GROUNDING RULES:
 2. ORGANIZATION: Use **Bold text**, Bullet points, and clear spacing. Always use double newlines between paragraphs and sections for maximum readability.
 3. EXCLUSIVE SOURCE: Use ONLY the provided CONTEXT to answer. Do not use outside knowledge.
 4. REFUSAL POLICY: If a question is completely unrelated to the study materials (e.g., "how to cook", "current news"), respond with: "I'm sorry, I can only assist with questions related to your study materials."
-5. CITATIONS: Cite your sources using [Source X] notation where X is the number.
+5. NO CITATIONS: Do not mention sources, documents, page numbers, or use [Source X] notation. Answer directly without referencing where information came from.
 
 CONTEXT:
 ${contextText}
@@ -71,7 +71,7 @@ ${contextText}
           return;
       }
 
-      const contextText = contextChunks.map((chunk, i) => `[Source ${i+1}]: ${chunk.content}`).join("\n\n");
+      const contextText = contextChunks.map((chunk) => chunk.content).join("\n\n");
 
       const systemPrompt = `
 You are a professional AI StudyBuddy. Your goal is to provide helpful, organized, and accurate information based ONLY on the provided study materials.
@@ -81,7 +81,7 @@ STRICT GROUNDING RULES:
 2. ORGANIZATION: Use **Bold text**, Bullet points, and clear spacing. Always use double newlines between paragraphs and sections for maximum readability.
 3. EXCLUSIVE SOURCE: Use ONLY the provided CONTEXT to answer. Do not use outside knowledge.
 4. REFUSAL POLICY: If a question is completely unrelated to the study materials (e.g., "how to cook", "current news"), respond with: "I'm sorry, I can only assist with questions related to your study materials."
-5. CITATIONS: Cite your sources using [Source X] notation where X is the number.
+5. NO CITATIONS: Do not mention sources, documents, page numbers, or use [Source X] notation. Answer directly without referencing where information came from.
 
 CONTEXT:
 ${contextText}

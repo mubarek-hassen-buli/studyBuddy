@@ -64,15 +64,6 @@ export const chatRoutes = new Elysia({ prefix: "/api/chat" })
             stream.send(chunk);
         }
         
-        if (context.length > 0) {
-            stream.send("\n\n---\n**Sources:**\n");
-            context.forEach((c, i) => {
-                const name = c.metadata.fileName || "Relevant Source";
-                const page = c.metadata.page ? ` (Page ${c.metadata.page})` : "";
-                stream.send(`[${i+1}] ${name}${page}\n`);
-            });
-        }
-        
         stream.close();
     });
   }, {
@@ -114,13 +105,6 @@ export const chatRoutes = new Elysia({ prefix: "/api/chat" })
         // Stream chunks from Gemini
         for await (const chunk of ragService.streamResponse(message, context)) {
             stream.send(chunk);
-        }
-        
-        if (context.length > 0) {
-            stream.send("\n\n---\nSources:\n");
-            context.forEach((c, i) => {
-                stream.send(`[${i+1}] ${c.metadata.fileName || "Unknown Document"} (Page ${c.metadata.page || "?"})\n`);
-            });
         }
         
         stream.close();
