@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { BrainCircuit, BookOpen, GraduationCap, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { BrainCircuit, BookOpen, GraduationCap, ArrowRight, ShieldCheck, Sparkles, Check } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import ElectricBorder from "@/components/ElectricBorder";
 
 export default function LandingPage() {
   return (
@@ -142,6 +144,108 @@ export default function LandingPage() {
               <p className="text-slate-300 text-sm leading-relaxed">
                 Toggle between Summarize, Flashcards, and Quizzes to transform raw material into active knowledge.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-32 px-6 bg-white/5 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl font-bold text-white mb-4">Simple, Transparent Pricing</h2>
+            <p className="text-slate-300 max-w-xl mx-auto">Start for free, upgrade when you need tailored AI power.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 items-start max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <Card className="rounded-[32px] border-white/10 shadow-xl bg-white/5 backdrop-blur-md relative overflow-hidden h-full flex flex-col">
+              <CardHeader className="p-8 pb-0 border-b border-white/5">
+                 <div className="mb-4">
+                    <h3 className="text-2xl font-black text-white">Free</h3>
+                    <p className="text-slate-400 font-medium mt-1">Best for personal use.</p>
+                 </div>
+                 <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-black text-white tracking-tight">Free</span>
+                 </div>
+              </CardHeader>
+              <CardContent className="p-8 flex-1">
+                 <Link href="/sign-up">
+                   <Button className="w-full rounded-full h-12 font-bold text-lg bg-white text-slate-900 hover:bg-slate-200 mb-8 shadow-lg shadow-white/10">
+                      Start for Free
+                   </Button>
+                 </Link>
+                 
+                 <div className="space-y-4">
+                    <p className="font-bold text-white">What you will get</p>
+                    <ul className="space-y-3">
+                       {[
+                          "Access to core AI features",
+                          "3 Study Buddies",
+                          "Standard processing speed",
+                          "Basic flashcards & quizzes",
+                          "Email support"
+                       ].map((item, i) => (
+                          <li key={i} className="flex items-center gap-3 text-slate-300 font-medium">
+                             <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                                <Check className="w-3 h-3 text-white stroke-[3]" />
+                             </div>
+                             {item}
+                          </li>
+                       ))}
+                    </ul>
+                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Pro Plan */}
+            <div className="relative h-full">
+               <ElectricBorder color="#6366f1" speed={2} chaos={0.15} borderRadius={32}>
+                  <Card className="rounded-[32px] border-0 shadow-2xl bg-[#0f172a] text-white h-full flex flex-col relative z-10">
+                    
+                    {/* Glow effect similar to design */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-[80px] -mr-16 -mt-16 pointer-events-none" />
+                    
+                    <CardHeader className="p-8 pb-0 relative border-b border-white/5">
+                       <div className="mb-4">
+                          <h3 className="text-2xl font-black text-white">Pro</h3>
+                          <p className="text-slate-400 font-medium mt-1">For serious students & power users.</p>
+                       </div>
+                       <div className="flex items-baseline gap-1">
+                          <span className="text-5xl font-black text-white tracking-tight">$9</span>
+                          <span className="text-slate-400 font-medium">/per month</span>
+                       </div>
+                    </CardHeader>
+                    <CardContent className="p-8 flex-1 relative">
+                       <Link href="/sign-up">
+                         <Button className="w-full rounded-full h-12 font-bold text-lg bg-indigo-500 hover:bg-indigo-400 text-white mb-8 shadow-lg shadow-indigo-500/25 border border-indigo-400/20">
+                            Get Started
+                         </Button>
+                       </Link>
+                       
+                       <div className="space-y-4">
+                          <p className="font-bold text-white">What you will get</p>
+                          <ul className="space-y-3">
+                             {[
+                                "Everything in Free",
+                                "Unlimited Study Buddies",
+                                "Priority AI processing",
+                                "Advanced reasoning models",
+                                "Bulk document uploads",
+                                "Early access to new features"
+                             ].map((item, i) => (
+                                <li key={i} className="flex items-center gap-3 text-slate-300 font-medium">
+                                   <div className="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0">
+                                      <Check className="w-3 h-3 text-indigo-400 stroke-[3]" />
+                                   </div>
+                                   {item}
+                                </li>
+                             ))}
+                          </ul>
+                       </div>
+                    </CardContent>
+                  </Card>
+               </ElectricBorder>
             </div>
           </div>
         </div>

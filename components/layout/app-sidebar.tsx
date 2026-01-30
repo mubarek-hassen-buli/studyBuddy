@@ -42,6 +42,7 @@ export function AppSidebar() {
     { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
     { name: "My Buddies", icon: BrainCircuit, href: "/dashboard/buddies" },
     { name: "Documents", icon: FileText, href: "/dashboard/documents" },
+    { name: "Pricing", icon: LayoutDashboard, href: "/dashboard/pricing" },
     { name: "Settings", icon: Settings, href: "/dashboard/settings" },
   ];
 
