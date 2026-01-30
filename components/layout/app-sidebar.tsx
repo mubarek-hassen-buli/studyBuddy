@@ -24,6 +24,7 @@ import {
 import { useAuthStore } from "@/store/auth-store";
 import { useAppStore } from "@/store/app-store";
 import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 
 export function AppSidebar() {
@@ -78,10 +79,10 @@ export function AppSidebar() {
                     : "text-slate-500 hover:text-primary hover:bg-slate-50"
                 }`}
               >
-                <a href={item.href}>
+                <Link href={item.href}>
                   <item.icon className="mr-3 h-5 w-5" />
                   <span className="font-medium">{item.name}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

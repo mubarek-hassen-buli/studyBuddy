@@ -22,7 +22,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isLoading: true,
   checkSession: async () => {
-    set({ isLoading: true });
+    const { user } = useAuthStore.getState();
+    if (!user) {
+      set({ isLoading: true });
+    }
+    
     try {
       const { data } = await authClient.getSession();
       set({ user: data?.user as User | null, isLoading: false });
