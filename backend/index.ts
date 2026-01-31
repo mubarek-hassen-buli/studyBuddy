@@ -10,7 +10,10 @@ import { learningRoutes } from "./routes/learning";
 
 const app = new Elysia({ adapter: node() })
   .use(cors({
-    origin: ["http://localhost:3000"],
+    origin: [
+      "http://localhost:3000",
+      "https://study-buddy-self-ten.vercel.app"
+    ],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
   }))
