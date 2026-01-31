@@ -23,7 +23,7 @@ const app = new Elysia({ adapter: node() })
   .use(chatRoutes)
   .use(learningRoutes)
   .get("/", () => "Hello from StudyBuddy API")
-  .listen(3001);
+  .listen(process.env.PORT || 3001);
 
 console.log(
   `🦊 Elysia is running at http://localhost:3001`
