@@ -16,6 +16,15 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  // 1. ADD COOKIE CONFIGURATION
+  advanced: {
+    crossDomain: true,
+    defaultCookieAttributes: {
+      sameSite: "none", // Allows cookie to be sent across different domains
+      secure: true,     // Required when sameSite is "none" (must use HTTPS)
+      httpOnly: true,
+    }
+  },
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
@@ -23,6 +32,8 @@ export const auth = betterAuth({
   trustedOrigins: [
     "http://localhost:3000", // Next.js frontend
     "http://localhost:3001", // Backend itself
+    "https://study-buddy-self-ten.vercel.app", // Production frontend
+    "https://studybuddy-production-4127.up.railway.app"
   ],
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3001",
   secret: process.env.BETTER_AUTH_SECRET!,
