@@ -1,206 +1,360 @@
-# 🚀 StudyBuddy Vercel Deployment Guide
+# 🚀 StudyBuddy Deployment Guide
+## Railway (Backend) + Vercel (Frontend)
 
-This guide will walk you through deploying StudyBuddy to Vercel with separate backend and frontend deployments.
+This guide walks you through deploying StudyBuddy using the optimal setup: Railway for your Elysia backend and Vercel for your Next.js frontend.
+
+---
 
 ## 📋 Prerequisites
 
-- Vercel account (sign up at [vercel.com](https://vercel.com))
-- GitHub repository with your code pushed
-- All cloud services already configured (Neon DB, Qdrant, ImageKit, Gemini API)
+- ✅ Railway account ([railway.app](https://railway.app))
+- ✅ Vercel account ([vercel.com](https://vercel.com))
+- ✅ GitHub repository with your code pushed
+- ✅ All cloud services configured (Neon DB, Qdrant, ImageKit, Gemini API)
+
+---
 
 ## 🏗️ Architecture Overview
 
-StudyBuddy requires **TWO separate Vercel deployments**:
-1. **Backend** - Elysia API server (runs on port 3001 locally)
-2. **Frontend** - Next.js application (runs on port 3000 locally)
+```
+┌─────────────────┐         ┌──────────────────┐
+│  Vercel         │         │  Railway         │
+│  (Frontend)     │────────▶│  (Backend)       │
+│  Next.js App    │  API    │  Elysia Server   │
+└─────────────────┘         └──────────────────┘
+        │                           │
+        │                           │
+        ▼                           ▼
+   [Users Access]           [Database, AI APIs]
+```
 
 ---
 
-## 📦 Part 1: Backend Deployment
+# 🚂 Part 1: Deploy Backend to Railway
 
-### Step 1: Update Backend Entry Point
+## Step 1: Prepare Backend for Railway
 
-Make sure `backend/index.ts` exports the Elysia app for Vercel (you've already done this! ✅):
+### 1.1 Create Railway Configuration
+
+Create `railway.json` in your **backend** folder:
+
+```json
+{
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "node --loader tsx backend/index.ts",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
+```
+
+### 1.2 Verify Backend Entry Point
+
+Your `backend/index.ts` should already have this at the end:
 
 ```typescript
-// At the end of backend/index.ts
 export default app;
 ```
 
-### Step 2: Deploy Backend to Vercel
+✅ You already have this!
 
-1. Go to [vercel.com/new](https://vercel.com/new)
-2. Import your GitHub repository
-3. Configure the project:
-   - **Project Name**: `studybuddy-backend`
-   - **Framework Preset**: Other
-   - **Root Directory**: `backend` ⚠️ **IMPORTANT: Select the backend folder!**
-   - **Build Command**: `npm install`
-   - **Output Directory**: Leave empty
-   - **Install Command**: `npm install`
+### 1.3 Add Start Script to package.json
 
-4. **Add Environment Variables** (click "Environment Variables"):
-   ```
-   DATABASE_URL=postgresql://neondb_owner:npg_YhfP0UHb2ulB@ep-muddy-boat-ag4s2hoa-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-   
-   GEMINI_API_KEY=AIzaSyB-t4xfO0c8Ro3vDUQkXf_Tt4Oxex2d14w
-   GEMINI_MODEL=gemini-2.5-flash
-   GEMINI_EMBEDDING_MODEL=text-embedding-004
-   
-   QDRANT_URL=https://95aa686a-bcfd-4958-a44d-e41950ff96e8.europe-west3-0.gcp.cloud.qdrant.io
-   QDRANT_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.90sE1KxUXB5FzsVYU3b7m3_i-mfr0BhPPw3zSAbtr4w
-   
-   IMAGEKIT_PRIVATE_KEY=private_L7RQ6Nec/RNP2Fj6DUO6WOf/95w=
-   IMAGEKIT_PUBLIC_KEY=public_cQhJjyY8tnCkoCWOBbnQA4qYRpE=
-   IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/emavm8hbl/
-   
-   BETTER_AUTH_SECRET=8c895590f0547d4e1b103fa448997cc020162ce3fa9347826407b0601b9be130f3f8f4010c877c731582d7d4864f9d4c5f350cef8c0b180baae01b99bc150234
-   ```
+Add this to your root `package.json` scripts:
 
-5. **IMPORTANT**: After deployment, note your backend URL (e.g., `https://studybuddy-backend.vercel.app`)
+```json
+{
+  "scripts": {
+    "start:backend": "tsx backend/index.ts"
+  }
+}
+```
 
-6. **Update Backend Environment Variables**:
-   - Go to your backend project settings
-   - Add/Update:
-     ```
-     BETTER_AUTH_URL=https://studybuddy-backend.vercel.app
-     NEXT_PUBLIC_API_URL=https://studybuddy-backend.vercel.app
-     ```
-   - Redeploy the backend
+## Step 2: Deploy to Railway
+
+### 2.1 Create New Project
+
+1. Go to [railway.app/new](https://railway.app/new)
+2. Click **"Deploy from GitHub repo"**
+3. Select your `studybuddy` repository
+4. Click **"Deploy Now"**
+
+### 2.2 Configure Service
+
+1. Railway will create a service automatically
+2. Click on the service card
+3. Go to **Settings** tab
+
+### 2.3 Set Root Directory
+
+In Settings:
+- **Root Directory**: `backend`
+- **Start Command**: `npm run start:backend`
+
+### 2.4 Add Environment Variables
+
+Click **Variables** tab and add:
+
+```env
+DATABASE_URL=postgresql://neondb_owner:npg_YhfP0UHb2ulB@ep-muddy-boat-ag4s2hoa-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+
+GEMINI_API_KEY=AIzaSyB-t4xfO0c8Ro3vDUQkXf_Tt4Oxex2d14w
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_EMBEDDING_MODEL=text-embedding-004
+
+QDRANT_URL=https://95aa686a-bcfd-4958-a44d-e41950ff96e8.europe-west3-0.gcp.cloud.qdrant.io
+QDRANT_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.90sE1KxUXB5FzsVYU3b7m3_i-mfr0BhPPw3zSAbtr4w
+
+IMAGEKIT_PRIVATE_KEY=private_L7RQ6Nec/RNP2Fj6DUO6WOf/95w=
+IMAGEKIT_PUBLIC_KEY=public_cQhJjyY8tnCkoCWOBbnQA4qYRpE=
+IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/emavm8hbl/
+
+BETTER_AUTH_SECRET=8c895590f0547d4e1b103fa448997cc020162ce3fa9347826407b0601b9be130f3f8f4010c877c731582d7d4864f9d4c5f350cef8c0b180baae01b99bc150234
+
+PORT=3001
+```
+
+### 2.5 Generate Public Domain
+
+1. Go to **Settings** tab
+2. Scroll to **Networking** section
+3. Click **Generate Domain**
+4. **📝 IMPORTANT**: Copy your Railway URL (e.g., `https://studybuddy-backend-production.up.railway.app`)
+
+### 2.6 Update Backend Environment Variables
+
+Add these to your Railway environment variables:
+
+```env
+BETTER_AUTH_URL=https://your-railway-url.up.railway.app
+NEXT_PUBLIC_API_URL=https://your-railway-url.up.railway.app
+```
+
+Replace `your-railway-url.up.railway.app` with your actual Railway domain!
+
+### 2.7 Deploy
+
+Click **Deploy** or push to GitHub (Railway auto-deploys on push)
 
 ---
 
-## 🎨 Part 2: Frontend Deployment
+# ☁️ Part 2: Deploy Frontend to Vercel
 
-### Step 1: Deploy Frontend to Vercel
+## Step 1: Deploy to Vercel
 
-1. Go to [vercel.com/new](https://vercel.com/new) again
-2. Import the **same** GitHub repository
-3. Configure the project:
-   - **Project Name**: `studybuddy-frontend` (or just `studybuddy`)
-   - **Framework Preset**: Next.js
+### 1.1 Create New Project
+
+1. Go to [vercel.com/new](https://vercel.com/new)
+2. Import your GitHub repository
+3. Configure:
+   - **Project Name**: `studybuddy` (or `studybuddy-frontend`)
+   - **Framework**: Next.js (auto-detected)
    - **Root Directory**: `./` (keep as root)
    - **Build Command**: `npm run build`
    - **Output Directory**: `.next`
 
-4. **Add Environment Variables**:
-   ```
-   NEXT_PUBLIC_API_URL=https://studybuddy-backend.vercel.app
-   NEXT_PUBLIC_APP_NAME=StudyBuddy
-   
-   DATABASE_URL=postgresql://neondb_owner:npg_YhfP0UHb2ulB@ep-muddy-boat-ag4s2hoa-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-   
-   GEMINI_API_KEY=AIzaSyB-t4xfO0c8Ro3vDUQkXf_Tt4Oxex2d14w
-   GEMINI_MODEL=gemini-2.5-flash
-   GEMINI_EMBEDDING_MODEL=text-embedding-004
-   
-   QDRANT_URL=https://95aa686a-bcfd-4958-a44d-e41950ff96e8.europe-west3-0.gcp.cloud.qdrant.io
-   QDRANT_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.90sE1KxUXB5FzsVYU3b7m3_i-mfr0BhPPw3zSAbtr4w
-   
-   IMAGEKIT_PRIVATE_KEY=private_L7RQ6Nec/RNP2Fj6DUO6WOf/95w=
-   IMAGEKIT_PUBLIC_KEY=public_cQhJjyY8tnCkoCWOBbnQA4qYRpE=
-   IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/emavm8hbl/
-   
-   BETTER_AUTH_SECRET=8c895590f0547d4e1b103fa448997cc020162ce3fa9347826407b0601b9be130f3f8f4010c877c731582d7d4864f9d4c5f350cef8c0b180baae01b99bc150234
-   BETTER_AUTH_URL=https://studybuddy-backend.vercel.app
-   ```
+### 1.2 Add Environment Variables
 
-   **⚠️ CRITICAL**: Replace `https://studybuddy-backend.vercel.app` with your actual backend URL from Part 1!
+Click **Environment Variables** and add:
 
-5. Click **Deploy**
+```env
+NEXT_PUBLIC_API_URL=https://your-railway-url.up.railway.app
+NEXT_PUBLIC_APP_NAME=StudyBuddy
+
+DATABASE_URL=postgresql://neondb_owner:npg_YhfP0UHb2ulB@ep-muddy-boat-ag4s2hoa-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+
+GEMINI_API_KEY=AIzaSyB-t4xfO0c8Ro3vDUQkXf_Tt4Oxex2d14w
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_EMBEDDING_MODEL=text-embedding-004
+
+QDRANT_URL=https://95aa686a-bcfd-4958-a44d-e41950ff96e8.europe-west3-0.gcp.cloud.qdrant.io
+QDRANT_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.90sE1KxUXB5FzsVYU3b7m3_i-mfr0BhPPw3zSAbtr4w
+
+IMAGEKIT_PRIVATE_KEY=private_L7RQ6Nec/RNP2Fj6DUO6WOf/95w=
+IMAGEKIT_PUBLIC_KEY=public_cQhJjyY8tnCkoCWOBbnQA4qYRpE=
+IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/emavm8hbl/
+
+BETTER_AUTH_SECRET=8c895590f0547d4e1b103fa448997cc020162ce3fa9347826407b0601b9be130f3f8f4010c877c731582d7d4864f9d4c5f350cef8c0b180baae01b99bc150234
+BETTER_AUTH_URL=https://your-railway-url.up.railway.app
+```
+
+**⚠️ CRITICAL**: Replace `https://your-railway-url.up.railway.app` with your actual Railway backend URL!
+
+### 1.3 Deploy
+
+Click **Deploy** and wait for the build to complete.
 
 ---
 
-## ✅ Part 3: Verification
+# 🔧 Part 3: Configure CORS
 
-### Test Your Deployment
+After both deployments are live, you need to update your backend CORS settings.
 
-1. **Backend Health Check**:
-   - Visit: `https://your-backend-url.vercel.app/api/health` (if you have a health endpoint)
-   - Or test any API endpoint
+## Update backend/index.ts
 
-2. **Frontend Check**:
-   - Visit: `https://your-frontend-url.vercel.app`
-   - Try signing up/logging in
-   - Create a StudyBuddy
-   - Upload a document
-   - Test chat functionality
+Find the CORS configuration and add your Vercel domain:
 
-### Common Issues & Solutions
-
-#### Issue: CORS Errors
-**Solution**: Make sure your backend CORS configuration allows your frontend domain:
 ```typescript
-// In backend/index.ts
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://your-frontend-url.vercel.app'
+    'https://your-vercel-app.vercel.app'  // Add your Vercel URL here
   ],
   credentials: true
-}))
+}));
 ```
 
-#### Issue: Authentication Not Working
+Push this change to GitHub - Railway will auto-deploy!
+
+---
+
+# ✅ Part 4: Verification
+
+## 4.1 Test Backend
+
+Visit your Railway URL:
+```
+https://your-railway-url.up.railway.app/api/studybuddy
+```
+
+You should see a response (might be "Unauthorized" - that's OK, it means the server is running!)
+
+## 4.2 Test Frontend
+
+1. Visit your Vercel URL
+2. Try to sign up / log in
+3. Create a StudyBuddy
+4. Upload a document
+5. Test chat functionality
+6. Try learning modes
+
+---
+
+# 🐛 Troubleshooting
+
+## Issue: Backend Not Starting on Railway
+
+**Check Railway Logs**:
+1. Go to Railway dashboard
+2. Click your service
+3. Click **Deployments** → **View Logs**
+
+**Common fixes**:
+- Verify `PORT` environment variable is set to `3001`
+- Check that `start:backend` script exists in package.json
+- Ensure all dependencies are in `package.json`
+
+## Issue: CORS Errors
+
 **Solution**: 
-- Verify `BETTER_AUTH_URL` points to your backend URL
-- Check that `BETTER_AUTH_SECRET` is the same in both deployments
+1. Add your Vercel domain to CORS origins in `backend/index.ts`
+2. Make sure `credentials: true` is set
+3. Redeploy backend
 
-#### Issue: Database Connection Fails
-**Solution**: 
-- Ensure Neon database allows connections from Vercel IPs
-- Verify `DATABASE_URL` is correct in environment variables
+## Issue: Authentication Not Working
 
-#### Issue: File Uploads Fail
-**Solution**: 
-- Verify ImageKit credentials are correct
-- Check that ImageKit allows requests from your Vercel domains
+**Check**:
+- `BETTER_AUTH_URL` points to Railway backend URL (not localhost!)
+- `BETTER_AUTH_SECRET` is identical in both Railway and Vercel
+- Both deployments have the same secret
 
----
+## Issue: Database Connection Fails
 
-## 🔄 Continuous Deployment
+**Solution**:
+- Verify `DATABASE_URL` is correct in Railway variables
+- Check Neon dashboard - ensure database is active
+- Test connection from Railway logs
 
-Both deployments will automatically redeploy when you push to your GitHub repository's main branch.
+## Issue: File Uploads Fail
 
-To deploy manually:
-1. Go to your Vercel dashboard
-2. Select the project
-3. Click "Deployments" → "Redeploy"
-
----
-
-## 📊 Monitoring
-
-- **Vercel Dashboard**: Monitor deployments, logs, and analytics
-- **Backend Logs**: Check function logs in Vercel for API errors
-- **Frontend Logs**: Check browser console and Vercel function logs
+**Check**:
+- ImageKit credentials are correct in Railway
+- ImageKit allows requests from Railway domain
+- Check Railway logs for specific errors
 
 ---
 
-## 🎯 Quick Checklist
+# 📊 Monitoring & Logs
 
-- [ ] Backend deployed to Vercel
-- [ ] Backend URL noted
-- [ ] Backend environment variables configured
-- [ ] `BETTER_AUTH_URL` updated in backend
-- [ ] Frontend deployed to Vercel
-- [ ] Frontend environment variables configured with correct backend URL
-- [ ] CORS configured for frontend domain
-- [ ] Sign up/login tested
-- [ ] Document upload tested
-- [ ] Chat functionality tested
-- [ ] Learning modes tested
+## Railway Logs
+- Dashboard → Service → Deployments → View Logs
+- Real-time server logs
+- Error tracking
+
+## Vercel Logs
+- Dashboard → Project → Deployments → Function Logs
+- Build logs
+- Runtime logs
 
 ---
 
-## 🆘 Need Help?
+# 🔄 Continuous Deployment
 
-If you encounter issues:
-1. Check Vercel function logs
-2. Verify all environment variables are set correctly
-3. Test API endpoints directly using Postman or curl
-4. Check browser console for frontend errors
+Both platforms auto-deploy when you push to GitHub:
 
-**Your deployment URLs**:
-- Backend: `https://studybuddy-backend.vercel.app` (replace with actual)
-- Frontend: `https://studybuddy.vercel.app` (replace with actual)
+- **Railway**: Watches `main` branch → Redeploys backend
+- **Vercel**: Watches `main` branch → Redeploys frontend
+
+To disable auto-deploy:
+- **Railway**: Settings → Disable "Auto Deploy"
+- **Vercel**: Settings → Git → Disable "Production Branch"
+
+---
+
+# 💰 Pricing (Free Tiers)
+
+## Railway Free Tier
+- ✅ $5 free credit per month
+- ✅ Enough for small-medium apps
+- ✅ 512MB RAM, 1GB storage
+- ⚠️ Sleeps after 30 min inactivity (Hobby plan)
+
+## Vercel Free Tier
+- ✅ 100GB bandwidth/month
+- ✅ Unlimited deployments
+- ✅ Automatic HTTPS
+- ✅ Global CDN
+
+---
+
+# 🎯 Deployment Checklist
+
+- [ ] Railway backend deployed
+- [ ] Railway domain generated and noted
+- [ ] Railway environment variables configured
+- [ ] `BETTER_AUTH_URL` set to Railway URL
+- [ ] Vercel frontend deployed
+- [ ] Vercel environment variables configured with Railway URL
+- [ ] CORS updated with Vercel domain
+- [ ] Backend API tested (Railway URL)
+- [ ] Frontend tested (Vercel URL)
+- [ ] Sign up/login works
+- [ ] Document upload works
+- [ ] Chat functionality works
+- [ ] Learning modes work
+
+---
+
+# 🆘 Need Help?
+
+**Railway Support**:
+- [Railway Docs](https://docs.railway.app)
+- [Railway Discord](https://discord.gg/railway)
+
+**Vercel Support**:
+- [Vercel Docs](https://vercel.com/docs)
+- [Vercel Discord](https://vercel.com/discord)
+
+---
+
+# 📝 Your Deployment URLs
+
+After deployment, update these:
+
+- **Backend (Railway)**: `https://_____.up.railway.app`
+- **Frontend (Vercel)**: `https://_____.vercel.app`
+
+**Congratulations! Your app is now live! 🎉**

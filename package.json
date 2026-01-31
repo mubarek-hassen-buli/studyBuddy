@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:backend": "tsx watch backend/index.ts",
+    "start:backend": "tsx backend/index.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
