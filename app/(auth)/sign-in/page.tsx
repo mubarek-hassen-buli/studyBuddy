@@ -42,7 +42,7 @@ export default function SignInPage() {
         setError(error.message || "Invalid credentials");
       } else {
         setUser(data.user);
-        router.push("/");
+        router.push("/dashboard");
       }
     } catch (e) {
       setError("An unexpected error occurred");

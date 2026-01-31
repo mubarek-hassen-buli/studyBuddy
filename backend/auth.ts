@@ -19,6 +19,7 @@ export const auth = betterAuth({
   // 1. ADD COOKIE CONFIGURATION
   advanced: {
     crossDomain: true,
+    useSecureCookies: true, // Force secure cookies in production (must be HTTPS)
     defaultCookieAttributes: {
       sameSite: "none", // Allows cookie to be sent across different domains
       secure: true,     // Required when sameSite is "none" (must use HTTPS)

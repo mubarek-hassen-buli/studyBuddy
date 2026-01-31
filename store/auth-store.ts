@@ -28,9 +28,24 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     
     try {
-      const { data } = await authClient.getSession();
-      set({ user: data?.user as User | null, isLoading: false });
+      console.log("Checking session with BetterAuth...");
+      const { data, error } = await authClient.getSession();
+      
+      if (error) {
+        console.error("Session check error:", error);
+        set({ user: null, isLoading: false });
+        return;
+      }
+
+      if (data?.user) {
+        console.log("Session valid for:", data.user.email);
+        set({ user: data.user as User, isLoading: false });
+      } else {
+        console.warn("No active session found");
+        set({ user: null, isLoading: false });
+      }
     } catch (error) {
+      console.error("Session check exception:", error);
       set({ user: null, isLoading: false });
     }
   },

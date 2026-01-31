@@ -15,7 +15,8 @@ const app = new Elysia({ adapter: node() })
       "https://study-buddy-self-ten.vercel.app"
     ],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposeHeaders: ["Set-Cookie"]
   }))
   .use(authRoutes)
   .use(studyBuddyRoutes)

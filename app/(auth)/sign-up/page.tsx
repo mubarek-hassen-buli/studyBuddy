@@ -43,7 +43,7 @@ export default function SignUpPage() {
         setError(error.message || "Registration failed");
       } else {
         setUser(data.user);
-        router.push("/");
+        router.push("/dashboard");
       }
     } catch (e) {
       setError("An unexpected error occurred");
