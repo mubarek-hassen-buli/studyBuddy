@@ -54,40 +54,39 @@ export default function LandingPage() {
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="rounded-full px-8 py-7 text-lg border-white/20 text-white hover:bg-white/10">
-              See How It Works
-            </Button>
+            <Link href="#how-it-works">
+              <Button variant="outline" size="lg" className="rounded-full px-8 py-7 text-lg border-white/20 text-white hover:bg-white/10">
+                See How It Works
+              </Button>
+            </Link>
           </div>
 
-          {/* Feature Mockup Illustration */}
-          <div className="relative w-full max-w-5xl aspect-video bg-slate-50/10 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-2xl overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-primary/5 opacity-50" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full flex items-center justify-center">
-                {/* Abstract UI representation */}
-                <div className="w-[80%] h-[70%] bg-white/60 backdrop-blur-md rounded-xl shadow-lg border border-slate-100 relative overflow-hidden p-6 text-left">
-                    <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
-                        <div className="h-3 w-3 rounded-full bg-red-400" />
-                        <div className="h-3 w-3 rounded-full bg-yellow-400" />
-                        <div className="h-3 w-3 rounded-full bg-green-400" />
-                    </div>
-                    <div className="space-y-4">
-                        <div className="h-4 w-[60%] bg-slate-100 rounded" />
-                        <div className="h-4 w-[40%] bg-primary/10 rounded" />
-                        <div className="h-32 w-full bg-slate-50 rounded border border-dashed border-slate-200 flex items-center justify-center">
-                            <BookOpen className="w-12 h-12 text-slate-300" />
-                        </div>
-                    </div>
-                    
-                    {/* Floating elements */}
-                    <div className="absolute right-10 bottom-10 w-48 bg-white p-4 rounded-lg shadow-xl border border-slate-100 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Sparkles className="w-4 h-4 text-primary" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Quiz Generated</span>
-                        </div>
-                        <div className="h-2 w-full bg-slate-100 rounded mb-2" />
-                        <div className="h-2 w-[80%] bg-slate-100 rounded" />
-                    </div>
-                </div>
+          {/* Dashboard Video Demo */}
+          <div id="how-it-works" className="relative w-full max-w-5xl aspect-video rounded-3xl border border-white/10 shadow-[0_0_50px_-12px_rgba(99,102,241,0.3)] overflow-hidden group bg-slate-900 scroll-mt-24">
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent z-10 pointer-events-none" />
+            
+            <video 
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              preload="auto"
+              className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-700"
+            >
+              <source src="/video/dashboard.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+
+            {/* Subtle Overlay Elements for "Product Feel" */}
+            <div className="absolute top-4 left-4 z-20 flex gap-1.5 opacity-50">
+              <div className="w-2 h-2 rounded-full bg-red-500/50" />
+              <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
+              <div className="w-2 h-2 rounded-full bg-green-500/50" />
+            </div>
+
+            <div className="absolute bottom-6 left-6 z-20 flex items-center gap-3 animate-pulse">
+               <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(99,102,241,1)]" />
+               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Live Demo Perspective</span>
             </div>
           </div>
         </div>

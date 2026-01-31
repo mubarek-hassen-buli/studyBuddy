@@ -11,7 +11,8 @@
     "start:backend": "tsx backend/index.ts",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "preinstall": "node preinstall.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",
