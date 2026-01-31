@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, GraduationCap, CheckCircle2, XCircle, ChevronRight, Trophy, RefreshCw } from "lucide-react";
 import { useLearningContent } from "@/hooks/use-learning-content";
+import { api } from "@/lib/api/client";
 
 interface Question {
   question: string;
@@ -43,21 +44,32 @@ export function QuizInterface({ buddyId }: { buddyId: string }) {
   };
 
   const submitAnswer = () => {
-    if (!selectedOption || isAnswered) return;
-    
     setIsAnswered(true);
     if (selectedOption === questions[currentIndex].answer) {
-      setScore(score + 1);
+      const newScore = score + 1;
+      setScore(newScore);
+      
+      // If it's the last question, report immediately or wait? 
+      // Actually, handle in nextQuestion logic if it's the end.
     }
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
       setSelectedOption(null);
       setIsAnswered(false);
     } else {
       setIsFinished(true);
+      // Report final score to backend
+      try {
+          await api.post("/learning/quiz-score", {
+              score: selectedOption === questions[currentIndex].answer ? score + 1 : score,
+              total: questions.length
+          });
+      } catch (err) {
+          console.error("Failed to report score:", err);
+      }
     }
   };
 

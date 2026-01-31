@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { auth } from "../auth";
 import { db } from "../../db";
-import { studyBuddies } from "../../db/schema";
+import { studyBuddies, documents, usage } from "../../db/schema";
 import { eq, and, desc, count } from "drizzle-orm";
 import { createStudyBuddySchema, updateStudyBuddySchema } from "../../lib/validators/studybuddy";
 import { users } from "../../db/schema";
@@ -19,6 +19,48 @@ export const studyBuddyRoutes = new Elysia({ prefix: "/api/studybuddy" })
       set.status = 401;
       return "Unauthorized";
     }
+  })
+  .get("/stats", async ({ user }) => {
+    // 1. Total Buddies
+    const buddyCount = await db.select({ value: count() })
+        .from(studyBuddies)
+        .where(eq(studyBuddies.userId, user!.id));
+
+    // 2. Documents Count
+    const docCount = await db.select({ value: count() })
+        .from(documents)
+        .innerJoin(studyBuddies, eq(documents.studyBuddyId, studyBuddies.id))
+        .where(eq(studyBuddies.userId, user!.id));
+
+    // 3. Quiz Score (Average Performance)
+    const usageData = await db.query.usage.findMany({
+        where: and(
+            eq(usage.userId, user!.id),
+            eq(usage.resourceType, "quiz")
+        )
+    });
+
+    let totalScore = 0;
+    let totalQuestions = 0;
+
+    usageData.forEach(entry => {
+        if (Array.isArray(entry.metadata)) {
+            entry.metadata.forEach((m: any) => {
+                if (m.score !== undefined && m.total !== undefined) {
+                    totalScore += m.score;
+                    totalQuestions += m.total;
+                }
+            });
+        }
+    });
+
+    const avgScore = totalQuestions > 0 ? Math.round((totalScore / totalQuestions) * 100) : 0;
+
+    return {
+        totalBuddies: Number(buddyCount[0].value),
+        totalDocuments: Number(docCount[0].value),
+        avgQuizScore: avgScore
+    };
   })
   .get("/", async ({ user }) => {
     return await db.query.studyBuddies.findMany({

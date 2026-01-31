@@ -46,7 +46,7 @@ export const quotaChecker = (resourceType: keyof typeof QUOTAS) => {
     });
 };
 
-export const incrementQuota = async (userId: string, resourceType: keyof typeof QUOTAS) => {
+export const incrementQuota = async (userId: string, resourceType: keyof typeof QUOTAS, metadata?: any) => {
     const today = new Date().toISOString().split("T")[0];
 
     const existing = await db.query.usage.findFirst({
@@ -59,14 +59,19 @@ export const incrementQuota = async (userId: string, resourceType: keyof typeof 
 
     if (existing) {
         await db.update(usage)
-            .set({ count: sql`${usage.count} + 1`, updatedAt: new Date() })
+            .set({ 
+                count: sql`${usage.count} + 1`, 
+                updatedAt: new Date(),
+                metadata: metadata ? (existing.metadata ? [...(existing.metadata as any[]), metadata] : [metadata]) : existing.metadata
+            })
             .where(eq(usage.id, existing.id));
     } else {
         await db.insert(usage).values({
             userId,
             resourceType,
             count: 1,
-            date: today
+            date: today,
+            metadata: metadata ? [metadata] : null
         });
     }
 };

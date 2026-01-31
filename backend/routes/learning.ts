@@ -6,7 +6,8 @@ import { eq, and, desc, count as sqlCount } from "drizzle-orm";
 import { learningModesService } from "../services/learning-modes";
 import { rateLimiter } from "../middleware/rate-limiter";
 
-import { flashcards, quizzes, summaries as summariesTable, users } from "../../db/schema";
+import { flashcards, quizzes, summaries as summariesTable, users, usage } from "../../db/schema";
+import { incrementQuota } from "../middleware/quota-checker";
 
 export const learningRoutes = new Elysia({ prefix: "/api/learning" })
   .use(rateLimiter({ limit: 20, window: 60 }))
@@ -211,4 +212,14 @@ export const learningRoutes = new Elysia({ prefix: "/api/learning" })
         studyBuddyId: t.String(),
         topic: t.Optional(t.String())
     })
+  })
+  .post("/quiz-score", async ({ body, user }) => {
+      const { score, total } = body as { score: number, total: number };
+      await incrementQuota(user!.id, "quiz", { score, total });
+      return { success: true };
+  }, {
+      body: t.Object({
+          score: t.Number(),
+          total: t.Number()
+      })
   });
