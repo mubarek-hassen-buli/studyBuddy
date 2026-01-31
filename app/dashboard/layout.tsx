@@ -22,7 +22,10 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (!isLoading && !user) {
+      console.log("[DashboardLayout] Redirection Check: No user found and not loading. Redirecting to sign-in.");
       router.push("/sign-in");
+    } else if (!isLoading && user) {
+      console.log("[DashboardLayout] Redirection Check: User authenticated:", user.email);
     }
   }, [user, isLoading, router]);
 

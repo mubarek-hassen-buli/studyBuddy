@@ -15,7 +15,10 @@ export default function Page() {
 
   useEffect(() => {
     if (!isLoading && user) {
+      console.log("[RootPage] Authenticated, pushing to dashboard...");
       router.push("/dashboard");
+    } else if (!isLoading && !user) {
+      console.log("[RootPage] Not authenticated, showing landing page.");
     }
   }, [user, isLoading, router]);
 
