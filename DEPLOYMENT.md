@@ -88,10 +88,11 @@ Add this to your root `package.json` scripts:
 2. Click on the service card
 3. Go to **Settings** tab
 
-### 2.3 Set Root Directory
+### 2.3 Set Build & Deploy Settings
 
 In Settings:
-- **Root Directory**: `backend`
+- **Root Directory**: `./` (or `backend`)
+- **Build Command**: `echo skipping` ⚠️ **This skips the frontend build causing the error!**
 - **Start Command**: `npm run start:backend`
 
 ### 2.4 Add Environment Variables
