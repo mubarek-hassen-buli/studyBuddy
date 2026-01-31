@@ -18,47 +18,26 @@ StudyBuddy requires **TWO separate Vercel deployments**:
 
 ## 📦 Part 1: Backend Deployment
 
-### Step 1: Create Backend Configuration
+### Step 1: Update Backend Entry Point
 
-Create a new file `vercel.json` in the root directory:
-
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "backend/index.ts",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "backend/index.ts"
-    }
-  ]
-}
-```
-
-### Step 2: Update Backend Entry Point
-
-Make sure `backend/index.ts` exports the Elysia app for Vercel:
+Make sure `backend/index.ts` exports the Elysia app for Vercel (you've already done this! ✅):
 
 ```typescript
 // At the end of backend/index.ts
 export default app;
 ```
 
-### Step 3: Deploy Backend to Vercel
+### Step 2: Deploy Backend to Vercel
 
 1. Go to [vercel.com/new](https://vercel.com/new)
 2. Import your GitHub repository
 3. Configure the project:
    - **Project Name**: `studybuddy-backend`
    - **Framework Preset**: Other
-   - **Root Directory**: `./` (keep as root)
-   - **Build Command**: Leave empty or use `npm install`
+   - **Root Directory**: `backend` ⚠️ **IMPORTANT: Select the backend folder!**
+   - **Build Command**: `npm install`
    - **Output Directory**: Leave empty
+   - **Install Command**: `npm install`
 
 4. **Add Environment Variables** (click "Environment Variables"):
    ```
