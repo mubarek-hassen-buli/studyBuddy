@@ -25,3 +25,6 @@ const app = new Elysia({ adapter: node() })
 console.log(
   `🦊 Elysia is running at http://localhost:3001`
 );
+
+export default app;
+  
