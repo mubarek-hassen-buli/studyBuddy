@@ -39,10 +39,13 @@ export default function SignInPage() {
       });
 
       if (error) {
+        console.error("[SignIn] Login failed:", error);
         setError(error.message || "Invalid credentials");
       } else {
+        console.log("[SignIn] Login success! User:", data.user.email);
         setUser(data.user);
-        router.push("/dashboard");
+        console.log("[SignIn] Hard redirecting to /dashboard...");
+        window.location.href = "/dashboard";
       }
     } catch (e) {
       setError("An unexpected error occurred");

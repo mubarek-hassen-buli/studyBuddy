@@ -40,10 +40,13 @@ export default function SignUpPage() {
       });
 
       if (error) {
+        console.error("[SignUp] Registration failed:", error);
         setError(error.message || "Registration failed");
       } else {
+        console.log("[SignUp] Registration success! User:", data.user.email);
         setUser(data.user);
-        router.push("/dashboard");
+        console.log("[SignUp] Hard redirecting to /dashboard...");
+        window.location.href = "/dashboard";
       }
     } catch (e) {
       setError("An unexpected error occurred");
