@@ -23,6 +23,7 @@ export const auth = betterAuth({
       sameSite: "none", // Allows cookie to be sent across different domains
       secure: true,     // Required when sameSite is "none" (must use HTTPS)
       httpOnly: true,
+      partitioned: true, // Support CHIPS for cross-domain auth
     }
   },
   session: {

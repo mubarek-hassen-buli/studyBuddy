@@ -27,6 +27,7 @@ export const metadata: Metadata = {
 
 import { Providers } from "@/components/providers/providers";
 import { Toaster } from "@/components/ui/sonner";
+import SilkBackground from "@/components/silk-background";
 
 export default function RootLayout({
   children,
@@ -39,6 +40,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
+          <SilkBackground />
           {children}
           <Toaster />
         </Providers>

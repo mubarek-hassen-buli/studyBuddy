@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { BrainCircuit, Mail, Lock, CheckCircle2, BookOpen, Star } from "lucide-react";
-import Silk from "@/components/Silk";
 
 const signinSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -54,7 +53,6 @@ export default function SignInPage() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-transparent selection:bg-primary/20 relative overflow-hidden">
-      <Silk color="#7B7481" speed={0.8} noiseIntensity={0.3} />
       
       {/* Left side - Form */}
       <div className="flex flex-col justify-center px-8 sm:px-12 lg:px-24 py-12 z-10 bg-white/80 backdrop-blur-xl border-r border-white/20">
