@@ -3,6 +3,8 @@ import { drizzle } from "drizzle-orm/neon-http";
 import { migrate } from "drizzle-orm/neon-http/migrator";
 import * as dotenv from "dotenv";
 
+import path from "path";
+
 dotenv.config();
 
 const runMigrate = async () => {
@@ -18,7 +20,8 @@ const runMigrate = async () => {
   const start = Date.now();
 
   try {
-    await migrate(db, { migrationsFolder: "db/migrations" });
+    const migrationsFolder = path.resolve(__dirname, "migrations");
+    await migrate(db, { migrationsFolder });
     const end = Date.now();
     console.log(`✅ Migrations completed in ${end - start}ms`);
     process.exit(0);
