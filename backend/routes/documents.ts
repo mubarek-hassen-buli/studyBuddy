@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { auth } from "../auth";
-import { db } from "../../db";
-import { studyBuddies, documents } from "../../db/schema";
+import { db } from "../db";
+import { studyBuddies, documents } from "../db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { processDocument, uploadToImageKit } from "../services/document-processor";
 import { quotaChecker, incrementQuota } from "../middleware/quota-checker";

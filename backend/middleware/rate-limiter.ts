@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
-import { db } from "../../db";
-import { usage } from "../../db/schema";
+import { db } from "../db";
+import { usage } from "../db/schema";
 import { eq, and, sql } from "drizzle-orm";
 
 // Simple in-memory rate limiter for MVP

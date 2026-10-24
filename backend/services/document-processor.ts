@@ -1,5 +1,5 @@
-import { db } from "../../db";
-import { studyBuddies, documents, chunks, processingStatusEnum } from "../../db/schema";
+import { db } from "../db";
+import { studyBuddies, documents, chunks, processingStatusEnum } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { parsePdf } from "../utils/parsers/pdf";
 import { parseDocx } from "../utils/parsers/docx";

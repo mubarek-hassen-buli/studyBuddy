@@ -1,10 +1,9 @@
 import { Elysia, t } from "elysia";
 import { auth } from "../auth";
-import { db } from "../../db";
-import { studyBuddies, documents, usage } from "../../db/schema";
+import { db } from "../db";
+import { studyBuddies, documents, usage, users } from "../db/schema";
 import { eq, and, desc, count } from "drizzle-orm";
-import { createStudyBuddySchema, updateStudyBuddySchema } from "../../lib/validators/studybuddy";
-import { users } from "../../db/schema";
+import { createStudyBuddySchema, updateStudyBuddySchema } from "../validators/studybuddy";
 import { rateLimiter } from "../middleware/rate-limiter";
 import { qdrantService } from "../services/qdrant";
 

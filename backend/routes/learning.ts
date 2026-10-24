@@ -1,12 +1,10 @@
 import { Elysia, t } from "elysia";
 import { auth } from "../auth";
-import { db } from "../../db";
-import { studyBuddies } from "../../db/schema";
+import { db } from "../db";
+import { studyBuddies, flashcards, quizzes, summaries as summariesTable, users, usage } from "../db/schema";
 import { eq, and, desc, count as sqlCount } from "drizzle-orm";
 import { learningModesService } from "../services/learning-modes";
 import { rateLimiter } from "../middleware/rate-limiter";
-
-import { flashcards, quizzes, summaries as summariesTable, users, usage } from "../../db/schema";
 import { incrementQuota } from "../middleware/quota-checker";
 
 export const learningRoutes = new Elysia({ prefix: "/api/learning" })

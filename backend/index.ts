@@ -12,7 +12,8 @@ const app = new Elysia({ adapter: node() })
   .use(cors({
     origin: [
       "http://localhost:3000",
-      "https://study-buddy-self-ten.vercel.app"
+      "https://study-buddy-self-ten.vercel.app",
+      ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
     ],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],

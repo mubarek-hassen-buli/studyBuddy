@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
-import { db } from "../../db";
-import { usage, resourceTypeEnum } from "../../db/schema";
+import { db } from "../db";
+import { usage, resourceTypeEnum } from "../db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { auth } from "../auth"; // Use auth to get user
 

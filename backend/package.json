@@ -1,0 +1,44 @@
+{
+  "name": "studybuddy-backend",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "tsx watch index.ts",
+    "start": "tsx index.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx db/migrate.ts",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@elysiajs/cors": "^1.4.1",
+    "@elysiajs/node": "^1.4.3",
+    "@elysiajs/stream": "^1.1.0",
+    "@google/generative-ai": "^0.24.1",
+    "@neondatabase/serverless": "^1.0.2",
+    "@qdrant/js-client-rest": "^1.16.2",
+    "better-auth": "^1.4.17",
+    "busboy": "^1.6.0",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.45.1",
+    "elysia": "^1.4.22",
+    "imagekit": "^6.0.0",
+    "mammoth": "^1.11.0",
+    "officegen": "^0.6.5",
+    "pdf-parse": "^2.4.5",
+    "pptx-text-parser": "^1.1.1",
+    "ws": "^8.19.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "@types/ws": "^8.18.1",
+    "drizzle-kit": "^0.31.8",
+    "tsx": "^4.21.0",
+    "typescript": "^5.8.0"
+  }
+}

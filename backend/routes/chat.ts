@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { auth } from "../auth";
-import { db } from "../../db";
-import { studyBuddies, documents } from "../../db/schema";
+import { db } from "../db";
+import { studyBuddies, documents } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { rateLimiter } from "../middleware/rate-limiter";
 import { quotaChecker, incrementQuota } from "../middleware/quota-checker";
