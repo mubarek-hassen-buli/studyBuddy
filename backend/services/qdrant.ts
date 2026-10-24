@@ -1,9 +1,9 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
 
-// Initialize Qdrant client
 const client = new QdrantClient({
   url: process.env.QDRANT_URL,
   apiKey: process.env.QDRANT_API_KEY,
+  checkCompatibility: false,
 });
 
 // Dimensions for gemini-embedding-001 (returns 3072 in current API context)
