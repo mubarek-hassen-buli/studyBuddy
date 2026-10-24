@@ -70,7 +70,7 @@ function StatusBadge({ status }: { status: string }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center gap-1.5 cursor-help">
-            {status === "processed" && (
+            {(status === "completed" || status === "processed") && (
               <Badge variant="secondary" className="bg-green-50 text-green-600 border-green-100 gap-1 px-2 py-0.5">
                 <CheckCircle2 className="w-3 h-3" />
                 <span className="text-[10px] font-black uppercase">Ready</span>
@@ -88,7 +88,7 @@ function StatusBadge({ status }: { status: string }) {
                 <span className="text-[10px] font-black uppercase">Pending</span>
               </Badge>
             )}
-            {status === "error" && (
+            {(status === "failed" || status === "error") && (
               <Badge variant="secondary" className="bg-red-50 text-red-600 border-red-100 gap-1 px-2 py-0.5">
                 <AlertCircle className="w-3 h-3" />
                 <span className="text-[10px] font-black uppercase">Error</span>
@@ -98,10 +98,10 @@ function StatusBadge({ status }: { status: string }) {
         </TooltipTrigger>
         <TooltipContent>
           <p className="text-xs font-medium">
-            {status === "processed" && "AI knowledge updated and ready for chat."}
+            {(status === "completed" || status === "processed") && "AI knowledge updated and ready for chat."}
             {status === "processing" && "Vectorizing and chunking document..."}
             {status === "pending" && "Waiting for processing queue."}
-            {status === "error" && "Something went wrong during processing."}
+            {(status === "failed" || status === "error") && "Something went wrong during processing."}
           </p>
         </TooltipContent>
       </Tooltip>

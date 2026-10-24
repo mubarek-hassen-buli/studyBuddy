@@ -5,6 +5,7 @@ import { useBuddy } from "@/hooks/use-buddies";
 import { DocumentList } from "@/components/dashboard/document-list";
 import { FileUpload } from "@/components/dashboard/file-upload";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BrainCircuit, GraduationCap, ChevronLeft, MessageSquare, BookOpen, Brain, MoreHorizontal, Settings, Clock, FileText, Zap } from "lucide-react";
 import Link from "next/link";
@@ -131,13 +132,4 @@ export default function BuddyDetailPage() {
       </div>
     </div>
   );
-}
-
-// Minimal Badge since it's used in header
-function Badge({ className, variant, children }: { className?: string, variant?: string, children: React.ReactNode }) {
-    return (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 ${className}`}>
-            {children}
-        </span>
-    );
 }
