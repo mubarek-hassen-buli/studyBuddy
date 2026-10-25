@@ -51,7 +51,7 @@ export function AppSidebar() {
   const mainNavItems = [
     { name: "Dashboard", icon: LayoutGrid, href: "/dashboard" },
     { name: "My Materials", icon: FileText, href: "/dashboard/documents" },
-    { name: "Flashcards", icon: Layers, href: "/dashboard/buddies" },
+    { name: "Flashcards", icon: Layers, href: "/dashboard/flashcards" },
     { name: "Quizzes", icon: Brain, href: "/dashboard/buddies" },
     { name: "AI Chat", icon: MessageSquare, href: "/dashboard/buddies" },
     { name: "Study Plans", icon: Calendar, href: "/dashboard" },
@@ -110,7 +110,7 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
                 {mainNavItems.map((item) => {
-                  const isActive = pathname === item.href && item.name === "Dashboard";
+                  const isActive = pathname === item.href;
                   return (
                     <SidebarMenuItem key={item.name}>
                       <SidebarMenuButton
