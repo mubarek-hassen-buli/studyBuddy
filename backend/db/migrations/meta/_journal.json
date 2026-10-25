@@ -15,6 +15,13 @@
       "when": 1792874161675,
       "tag": "0001_milky_sally_floyd",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792933110368,
+      "tag": "0002_ancient_mysterio",
+      "breakpoints": true
     }
   ]
 }

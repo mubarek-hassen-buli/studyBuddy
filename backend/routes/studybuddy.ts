@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { auth } from "../auth";
 import { db } from "../db";
-import { studyBuddies, documents, usage, users } from "../db/schema";
+import { studyBuddies, documents, usage, users, studySessions } from "../db/schema";
 import { eq, and, desc, count } from "drizzle-orm";
 import { createStudyBuddySchema, updateStudyBuddySchema } from "../validators/studybuddy";
 import { rateLimiter } from "../middleware/rate-limiter";
@@ -30,6 +30,22 @@ export const studyBuddyRoutes = new Elysia({ prefix: "/api/studybuddy" })
         .from(documents)
         .innerJoin(studyBuddies, eq(documents.studyBuddyId, studyBuddies.id))
         .where(eq(studyBuddies.userId, user!.id));
+
+    // 2b. Session Counts (Completed, In-progress, Scheduled)
+    const [completedSessions] = await db
+        .select({ value: count() })
+        .from(studySessions)
+        .where(and(eq(studySessions.userId, user!.id), eq(studySessions.status, "completed")));
+
+    const [inProgressSessions] = await db
+        .select({ value: count() })
+        .from(studySessions)
+        .where(and(eq(studySessions.userId, user!.id), eq(studySessions.status, "in_progress")));
+
+    const [scheduledSessions] = await db
+        .select({ value: count() })
+        .from(studySessions)
+        .where(and(eq(studySessions.userId, user!.id), eq(studySessions.status, "scheduled")));
 
     // 3. Quiz Score (Average Performance) & Usage Data
     const usageData = await db.query.usage.findMany({
@@ -148,13 +164,18 @@ export const studyBuddyRoutes = new Elysia({ prefix: "/api/studybuddy" })
         { name: "consistency", label: "Study Consistency", value: 85, fill: "var(--color-consistency)" },
     ];
 
+    const completedCount = Number(completedSessions?.value || 0);
+    const inProgressCount = Number(inProgressSessions?.value || 0);
+    const scheduledCount = Number(scheduledSessions?.value || 0);
+    const totalBuddyCount = Number(buddyCount[0]?.value || 0);
+
     return {
-        totalBuddies: Number(buddyCount[0]?.value || 0),
+        totalBuddies: totalBuddyCount,
         totalDocuments: totalRealDocs,
         avgQuizScore: avgScore,
-        endedProjects: Math.max(2, Math.floor(Number(buddyCount[0]?.value || 0) * 0.4)),
-        runningProjects: Math.max(1, Number(buddyCount[0]?.value || 0)),
-        pendingProjects: 1,
+        endedProjects: completedCount > 0 ? completedCount : Math.max(2, Math.floor(totalBuddyCount * 0.4)),
+        runningProjects: (totalBuddyCount + inProgressCount) > 0 ? (totalBuddyCount + inProgressCount) : 1,
+        pendingProjects: scheduledCount > 0 ? scheduledCount : 1,
         documentBreakdown,
         activityTimeline,
         radialMetrics,

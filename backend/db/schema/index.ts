@@ -7,4 +7,5 @@ export * from "./flashcards";
 export * from "./quizzes";
 export * from "./summaries";
 export * from "./usage";
+export * from "./sessions";
 export * from "./relations";

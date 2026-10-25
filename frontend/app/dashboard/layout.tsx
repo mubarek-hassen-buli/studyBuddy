@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Search, Bell, MessageSquare, Sparkles } from "lucide-react";
 import { CreateBuddyDialog } from "@/components/dashboard/create-buddy-dialog";
+import { MiniTimerPill } from "@/components/dashboard/mini-timer-pill";
 
 export default function DashboardLayout({
   children,
@@ -68,6 +69,7 @@ export default function DashboardLayout({
 
             {/* Header Right Profile */}
             <div className="flex items-center gap-3">
+              <MiniTimerPill />
 
               {/* User Profile Capsule */}
               <div className="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200/80">

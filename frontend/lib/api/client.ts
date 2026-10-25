@@ -46,6 +46,11 @@ export const api = {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   }),
+  patch: (endpoint: string, body?: any) => fetcher(endpoint, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined,
+  }),
   put: (endpoint: string, body: any) => fetcher(endpoint, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -59,3 +64,4 @@ export const api = {
     // sets it automatically with the correct boundary for FormData
   }),
 };
+

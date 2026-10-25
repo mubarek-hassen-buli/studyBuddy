@@ -7,11 +7,13 @@ import { flashcards } from "./flashcards";
 import { quizzes } from "./quizzes";
 import { summaries } from "./summaries";
 import { usage } from "./usage";
+import { studySessions } from "./sessions";
 
 // Users -> StudyBuddies (One to Many)
 export const usersRelations = relations(users, ({ many }) => ({
   studyBuddies: many(studyBuddies),
   usage: many(usage),
+  studySessions: many(studySessions),
 }));
 
 // StudyBuddies -> User (Many to One), StudyBuddies -> Documents (One to Many)
@@ -24,6 +26,7 @@ export const studyBuddiesRelations = relations(studyBuddies, ({ one, many }) => 
   flashcards: many(flashcards),
   quizzes: many(quizzes),
   summaries: many(summaries),
+  studySessions: many(studySessions),
 }));
 
 // Documents -> StudyBuddy (Many to One), Documents -> Chunks (One to Many)
@@ -72,5 +75,17 @@ export const usageRelations = relations(usage, ({ one }) => ({
   user: one(users, {
     fields: [usage.userId],
     references: [users.id],
+  }),
+}));
+
+// StudySessions -> User (Many to One), StudySessions -> StudyBuddy (Many to One)
+export const studySessionsRelations = relations(studySessions, ({ one }) => ({
+  user: one(users, {
+    fields: [studySessions.userId],
+    references: [users.id],
+  }),
+  studyBuddy: one(studyBuddies, {
+    fields: [studySessions.studyBuddyId],
+    references: [studyBuddies.id],
   }),
 }));
