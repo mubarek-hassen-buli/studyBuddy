@@ -30,12 +30,14 @@
     "mammoth": "^1.11.0",
     "officegen": "^0.6.5",
     "pdf-parse": "^2.4.5",
+    "pg": "^8.23.1",
     "pptx-text-parser": "^1.1.1",
     "ws": "^8.19.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",
+    "@types/pg": "^8.23.1",
     "@types/ws": "^8.18.1",
     "drizzle-kit": "^0.31.8",
     "tsx": "^4.21.0",

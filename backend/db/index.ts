@@ -1,17 +1,21 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
+import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "./schema/index";
-import ws from "ws";
-
-// Set up for Node.js environment using the robust 'ws' library
-neonConfig.webSocketConstructor = ws;
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not defined");
 }
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Resilient PostgreSQL connection pool for Node.js over standard TCP port 5432
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+});
+
 export const db = drizzle(pool, { schema });
