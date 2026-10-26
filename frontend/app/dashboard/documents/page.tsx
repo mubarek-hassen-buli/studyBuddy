@@ -27,7 +27,7 @@ export default function DocumentsPage() {
       {/* 2. Main Layout Grid: Materials Grid (Left 8.5 cols) + Sidebar (Right 3.5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-8 xl:col-span-9">
-          <MaterialsGrid />
+          <MaterialsGrid onUploadClick={() => setUploadModalOpen(true)} />
         </div>
 
         <div className="lg:col-span-4 xl:col-span-3">

@@ -41,7 +41,7 @@ export default function DashboardPage() {
           <FolioStudyMaterials />
         </div>
         <div className="flex flex-col">
-          <FolioStreakCard streakDays={3} />
+          <FolioStreakCard />
         </div>
       </div>
     </div>

@@ -1,11 +1,14 @@
 import { create } from "zustand";
 
-interface StudyBuddy {
+export interface StudyBuddy {
   id: string;
+  userId?: string;
   name: string;
-  subject?: string;
-  description?: string;
-  qdrantCollectionName?: string;
+  subject?: string | null;
+  description?: string | null;
+  qdrantCollectionName?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface StudyBuddyState {

@@ -12,15 +12,25 @@ import {
   Flame,
 } from "lucide-react";
 import Link from "next/link";
-import { useBuddies } from "@/hooks/use-buddies";
+import { useFlashcardDecks, FlashcardDeck } from "@/hooks/use-flashcard-decks";
+import { useStreak } from "@/hooks/use-streak";
+import { FlashcardsStudyModal } from "./flashcards-study-modal";
 
 export function FlashcardsSidebar() {
-  const { buddies } = useBuddies();
-  const defaultBuddyId = buddies && buddies.length > 0 ? buddies[0].id : null;
+  const { overview, decks } = useFlashcardDecks();
+  const { streak } = useStreak();
 
-  const reviewHref = defaultBuddyId
-    ? `/dashboard/study/${defaultBuddyId}?mode=flashcards`
-    : "/dashboard/buddies";
+  const [activeStudyDeck, setActiveStudyDeck] = React.useState<FlashcardDeck | null>(null);
+
+  const dueDeck = decks.find((d) => d.dueCount > 0) || decks[0] || null;
+
+  const handleStartReview = () => {
+    if (dueDeck) {
+      setActiveStudyDeck(dueDeck);
+    }
+  };
+
+  const retention = overview.retentionRate || 0;
 
   return (
     <div className="space-y-4">
@@ -35,13 +45,9 @@ export function FlashcardsSidebar() {
               Today&apos;s Review
             </h4>
           </div>
-          <Link
-            href={reviewHref}
-            className="text-[11px] font-bold text-slate-500 hover:text-[#0D382B] flex items-center gap-1 transition-colors"
-          >
-            <span>View All</span>
-            <ArrowRight className="w-3 h-3" />
-          </Link>
+          <span className="text-[11px] font-bold text-emerald-800">
+            {overview.dueToday} Due
+          </span>
         </div>
 
         {/* Character Avatar + Info */}
@@ -57,22 +63,32 @@ export function FlashcardsSidebar() {
           </div>
           <div>
             <h5 className="text-xs font-extrabold text-slate-900 leading-tight">
-              48 cards due today
+              {overview.dueToday > 0 ? `${overview.dueToday} cards due today` : "All caught up today!"}
             </h5>
             <p className="text-[11px] text-slate-400 font-medium">
-              Keep your streak alive!
+              {overview.dueToday > 0 ? "Keep your streak alive!" : "Great job staying consistent."}
             </p>
           </div>
         </div>
 
         {/* Start Reviewing Button */}
-        <Link
-          href={reviewHref}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#0D382B] hover:bg-[#07251C] text-white text-xs font-bold py-2.5 shadow-xs transition-all active:scale-95"
-        >
-          <Play className="w-3.5 h-3.5 fill-current" />
-          <span>Start Reviewing</span>
-        </Link>
+        {dueDeck ? (
+          <button
+            type="button"
+            onClick={handleStartReview}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#0D382B] hover:bg-[#07251C] text-white text-xs font-bold py-2.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+          >
+            <Play className="w-3.5 h-3.5 fill-current" />
+            <span>Practice {dueDeck.title}</span>
+          </button>
+        ) : (
+          <Link
+            href="/dashboard/documents"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#0D382B] hover:bg-[#07251C] text-white text-xs font-bold py-2.5 shadow-xs transition-all active:scale-95"
+          >
+            <span>Upload Notes for Cards</span>
+          </Link>
+        )}
       </div>
 
       {/* 2. Learning Progress (Donut Chart + Stats) */}
@@ -107,10 +123,10 @@ export function FlashcardsSidebar() {
                 fill="none"
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
-              {/* Foreground Green Progress Ring (68%) */}
+              {/* Foreground Green Progress Ring */}
               <path
                 className="text-emerald-500 transition-all duration-1000"
-                strokeDasharray="68, 100"
+                strokeDasharray={`${retention}, 100`}
                 strokeLinecap="round"
                 strokeWidth="3.2"
                 stroke="currentColor"
@@ -120,10 +136,10 @@ export function FlashcardsSidebar() {
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
               <span className="text-base font-extrabold text-slate-900 leading-none">
-                68%
+                {retention}%
               </span>
               <span className="text-[9px] text-slate-400 font-semibold leading-tight mt-0.5">
-                Overall Progress
+                Mastery Rate
               </span>
             </div>
           </div>
@@ -133,7 +149,7 @@ export function FlashcardsSidebar() {
             <div className="flex items-center gap-2 text-xs">
               <CreditCard className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <div>
-                <span className="font-bold text-slate-900">342 </span>
+                <span className="font-bold text-slate-900">{overview.totalCards} </span>
                 <span className="text-[10px] text-slate-400 font-medium">Total Cards</span>
               </div>
             </div>
@@ -141,7 +157,7 @@ export function FlashcardsSidebar() {
             <div className="flex items-center gap-2 text-xs">
               <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <div>
-                <span className="font-bold text-slate-900">8 </span>
+                <span className="font-bold text-slate-900">{overview.totalDecks} </span>
                 <span className="text-[10px] text-slate-400 font-medium">Decks</span>
               </div>
             </div>
@@ -149,7 +165,7 @@ export function FlashcardsSidebar() {
             <div className="flex items-center gap-2 text-xs">
               <Flame className="w-3.5 h-3.5 text-amber-500 shrink-0" />
               <div>
-                <span className="font-bold text-slate-900">3 </span>
+                <span className="font-bold text-slate-900">{streak.streakDays} </span>
                 <span className="text-[10px] text-slate-400 font-medium">Day Streak</span>
               </div>
             </div>
@@ -157,9 +173,8 @@ export function FlashcardsSidebar() {
         </div>
       </div>
 
-      {/* 3. Motivational Card: You're doing great! */}
+      {/* 3. Motivational Card */}
       <div className="relative overflow-hidden rounded-2xl bg-[#0D382B] p-4 text-white shadow-xs border border-emerald-950/20 flex items-center justify-between gap-3">
-        {/* Character Image */}
         <div className="relative w-18 h-20 sm:w-20 sm:h-22 shrink-0 overflow-hidden">
           <Image
             src="/images/folio.png"
@@ -170,7 +185,6 @@ export function FlashcardsSidebar() {
           />
         </div>
 
-        {/* Content & Action */}
         <div className="flex-1 min-w-0">
           <h4 className="text-xs font-bold text-white tracking-tight">
             You&apos;re doing great!
@@ -180,15 +194,23 @@ export function FlashcardsSidebar() {
             <span className="block text-[9px] text-emerald-200/60 font-semibold">— Folio</span>
           </p>
 
-          <Link
-            href={reviewHref}
-            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white text-[#0D382B] text-[10px] font-bold hover:bg-emerald-50 transition-all shadow-2xs active:scale-95"
+          <button
+            type="button"
+            onClick={handleStartReview}
+            className="inline-flex items-center gap-1.5 rounded-full bg-white text-[#0D382B] px-3.5 py-1 text-[11px] font-bold hover:bg-emerald-50 transition-all shadow-2xs active:scale-95"
           >
-            <span>Keep Going</span>
+            <span>Practice</span>
             <ArrowRight className="w-3 h-3" />
-          </Link>
+          </button>
         </div>
       </div>
+
+      {/* Practice Runner Modal if triggered from sidebar */}
+      <FlashcardsStudyModal
+        deck={activeStudyDeck}
+        isOpen={!!activeStudyDeck}
+        onClose={() => setActiveStudyDeck(null)}
+      />
     </div>
   );
 }

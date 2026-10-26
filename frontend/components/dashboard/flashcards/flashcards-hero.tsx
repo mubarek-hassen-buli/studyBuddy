@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { Layers, CreditCard, Calendar, Plus, UploadCloud } from "lucide-react";
-import { useBuddies } from "@/hooks/use-buddies";
+import { useFlashcardDecks } from "@/hooks/use-flashcard-decks";
 
 interface FlashcardsHeroProps {
   onCreateDeckClick: () => void;
@@ -11,8 +11,11 @@ interface FlashcardsHeroProps {
 }
 
 export function FlashcardsHero({ onCreateDeckClick, onImportClick }: FlashcardsHeroProps) {
-  const { buddies } = useBuddies();
-  const deckCount = buddies?.length ? Math.max(8, buddies.length) : 8;
+  const { overview } = useFlashcardDecks();
+
+  const deckCount = overview.totalDecks;
+  const totalCards = overview.totalCards;
+  const dueToday = overview.dueToday;
 
   return (
     <div className="relative overflow-hidden rounded-3xl bg-transparent pt-2 pb-4">
@@ -56,7 +59,7 @@ export function FlashcardsHero({ onCreateDeckClick, onImportClick }: FlashcardsH
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-extrabold text-slate-900 leading-tight">
-                  342
+                  {totalCards}
                 </span>
                 <span className="text-[10px] text-slate-400 font-semibold">
                   Total Cards
@@ -71,7 +74,7 @@ export function FlashcardsHero({ onCreateDeckClick, onImportClick }: FlashcardsH
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-extrabold text-slate-900 leading-tight">
-                  48
+                  {dueToday}
                 </span>
                 <span className="text-[10px] text-slate-400 font-semibold">
                   Due Today
@@ -98,38 +101,31 @@ export function FlashcardsHero({ onCreateDeckClick, onImportClick }: FlashcardsH
               className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2.5 text-xs font-bold transition-all shadow-2xs active:scale-95"
             >
               <UploadCloud className="w-4 h-4 text-slate-500" />
-              <span>Import</span>
+              <span>Import Flashcards</span>
             </button>
           </div>
 
-          {/* Character + Speech Bubble */}
+          {/* Character + Speech bubble */}
           <div className="relative flex items-center justify-end select-none mt-2">
-            {/* Speech Bubble */}
-            <div className="relative mr-3 max-w-[190px] sm:max-w-[210px] rounded-2xl bg-[#EBF4EE] border border-[#D4E7DC] p-3 shadow-2xs">
-              <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-3 h-3 bg-[#EBF4EE] border-t border-r border-[#D4E7DC] rotate-45" />
-              <p className="font-handwriting text-base sm:text-lg text-[#133226] font-bold leading-tight">
-                Small cards. Big progress!
+            <div className="relative mr-2 sm:mr-3 max-w-[190px] rounded-2xl bg-[#EBF4EE] border border-[#D4E7DC] p-3 shadow-2xs">
+              <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#EBF4EE] border-t border-r border-[#D4E7DC] rotate-45" />
+              <p className="font-handwriting text-base text-[#133226] font-bold leading-tight">
+                Practice makes permanent!
               </p>
-              <p className="font-handwriting text-xs text-[#234839] text-right mt-1 font-semibold">
-                — Folio
+              <p className="font-handwriting text-xs text-[#234839] leading-snug mt-0.5">
+                Review your cards daily for peak recall.
               </p>
             </div>
 
-            {/* Character Image */}
-            <div className="relative">
-              <div className="absolute -left-2 top-6 text-amber-500 text-xs font-black tracking-widest rotate-[-15deg] pointer-events-none">
-                \ | /
-              </div>
-              <div className="relative w-36 h-40 sm:w-44 sm:h-48 shrink-0">
-                <Image
-                  src="/images/folio.png"
-                  alt="Folio Character"
-                  width={180}
-                  height={190}
-                  priority
-                  className="w-full h-full object-contain object-bottom drop-shadow-sm"
-                />
-              </div>
+            <div className="relative w-28 h-32 sm:w-32 sm:h-36 shrink-0">
+              <Image
+                src="/images/folio.png"
+                alt="Folio character"
+                width={130}
+                height={145}
+                priority
+                className="w-full h-full object-contain object-bottom drop-shadow-xs"
+              />
             </div>
           </div>
         </div>

@@ -2,29 +2,59 @@
 
 import * as React from "react";
 import { TrendingUp, ChevronDown } from "lucide-react";
+import { useProgressMetrics, ProgressTimelinePoint } from "@/hooks/use-progress-metrics";
 
-interface ProgressPoint {
+interface FormattedPoint {
   date: string;
   displayDate: string;
   score: number; // 0 to 100
+  minutes: number;
+  sessions: number;
 }
 
-const DEFAULT_POINTS: ProgressPoint[] = [
-  { date: "2026-10-18", displayDate: "Oct 18", score: 38 },
-  { date: "2026-10-19", displayDate: "Oct 19", score: 32 },
-  { date: "2026-10-20", displayDate: "Oct 20", score: 52 },
-  { date: "2026-10-21", displayDate: "Oct 21", score: 44 },
-  { date: "2026-10-22", displayDate: "Oct 22", score: 85 },
-  { date: "2026-10-23", displayDate: "Oct 23", score: 62 },
-  { date: "2026-10-24", displayDate: "Oct 24", score: 60 },
-];
-
 export function FolioProgressChart() {
-  const [selectedRange, setSelectedRange] = React.useState("Last 7 days");
-  const [activePointIndex, setActivePointIndex] = React.useState<number>(4); // Default to Oct 22 peak!
+  const [selectedRange, setSelectedRange] = React.useState<7 | 30>(7);
+  const [dropdownOpen, setDropdownOpen] = React.useState(false);
+  const [activePointIndex, setActivePointIndex] = React.useState<number>(0);
 
-  const points = DEFAULT_POINTS;
-  const activePoint = points[activePointIndex];
+  const { metrics, isLoading } = useProgressMetrics(selectedRange);
+
+  // Fallback points if loading or empty
+  const points: FormattedPoint[] = React.useMemo(() => {
+    if (metrics?.timeline && metrics.timeline.length > 0) {
+      return metrics.timeline.map((p) => {
+        // Display score as minutes studied normalized to a 60-min daily target
+        const pct = Math.min(100, Math.round((p.minutes / 60) * 100));
+        return {
+          date: p.date,
+          displayDate: p.day,
+          score: pct,
+          minutes: p.minutes,
+          sessions: p.sessions,
+        };
+      });
+    }
+
+    // Default 7-day placeholder curve if brand new
+    return [
+      { date: "1", displayDate: "Mon", score: 20, minutes: 12, sessions: 1 },
+      { date: "2", displayDate: "Tue", score: 35, minutes: 21, sessions: 1 },
+      { date: "3", displayDate: "Wed", score: 50, minutes: 30, sessions: 1 },
+      { date: "4", displayDate: "Thu", score: 40, minutes: 24, sessions: 1 },
+      { date: "5", displayDate: "Fri", score: 70, minutes: 42, sessions: 2 },
+      { date: "6", displayDate: "Sat", score: 85, minutes: 51, sessions: 2 },
+      { date: "7", displayDate: "Sun", score: 60, minutes: 36, sessions: 1 },
+    ];
+  }, [metrics]);
+
+  // Keep active point in range
+  React.useEffect(() => {
+    if (points.length > 0 && activePointIndex >= points.length) {
+      setActivePointIndex(points.length - 1);
+    }
+  }, [points.length, activePointIndex]);
+
+  const activePoint = points[activePointIndex] || points[0];
 
   // SVG dimensions for scalable curve
   const width = 500;
@@ -37,7 +67,7 @@ export function FolioProgressChart() {
 
   // Calculate coordinates
   const coords = points.map((p, idx) => {
-    const x = paddingX + (idx / (points.length - 1)) * chartWidth;
+    const x = paddingX + (idx / Math.max(1, points.length - 1)) * chartWidth;
     const y = paddingY + chartHeight - (p.score / 100) * chartHeight;
     return { x, y, ...p };
   });
@@ -59,9 +89,12 @@ export function FolioProgressChart() {
   };
 
   const linePath = generateBezierPath(coords);
-  const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${height} L ${coords[0].x} ${height} Z`;
+  const areaPath =
+    coords.length > 0
+      ? `${linePath} L ${coords[coords.length - 1].x} ${height} L ${coords[0].x} ${height} Z`
+      : "";
 
-  const activeCoord = coords[activePointIndex];
+  const activeCoord = coords[activePointIndex] || coords[0];
 
   return (
     <div className="relative overflow-hidden rounded-3xl bg-[#0D382B] p-5 text-white shadow-xs border border-emerald-950/20 flex flex-col justify-between h-full min-h-[300px]">
@@ -77,15 +110,50 @@ export function FolioProgressChart() {
           <div>
             <h4 className="text-sm font-bold text-white tracking-tight">Study Progress</h4>
             <p className="text-[11px] text-emerald-100/70 font-medium leading-none mt-0.5">
-              Your learning journey, at a glance.
+              {metrics?.totalMinutes ? `${metrics.totalMinutes} mins total` : "Your learning journey, at a glance."}
             </p>
           </div>
         </div>
 
         {/* Range Selector Pill */}
-        <div className="flex items-center gap-1 bg-[#07241C] border border-[#174F3F] text-emerald-100 px-2.5 py-1 rounded-lg text-xs font-medium cursor-pointer hover:bg-[#093025] transition-colors">
-          <span>{selectedRange}</span>
-          <ChevronDown className="w-3.5 h-3.5 text-emerald-300" />
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="flex items-center gap-1 bg-[#07241C] border border-[#174F3F] text-emerald-100 px-2.5 py-1 rounded-lg text-xs font-medium cursor-pointer hover:bg-[#093025] transition-colors"
+          >
+            <span>Last {selectedRange} days</span>
+            <ChevronDown className="w-3.5 h-3.5 text-emerald-300" />
+          </button>
+
+          {dropdownOpen && (
+            <div className="absolute right-0 top-full mt-1.5 w-32 bg-[#07241C] border border-[#174F3F] rounded-xl shadow-xl z-30 py-1 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedRange(7);
+                  setDropdownOpen(false);
+                }}
+                className={`w-full text-left px-3 py-1.5 text-xs ${
+                  selectedRange === 7 ? "text-emerald-300 font-bold bg-white/5" : "text-emerald-100/70 hover:bg-white/5"
+                }`}
+              >
+                Last 7 days
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedRange(30);
+                  setDropdownOpen(false);
+                }}
+                className={`w-full text-left px-3 py-1.5 text-xs ${
+                  selectedRange === 30 ? "text-emerald-300 font-bold bg-white/5" : "text-emerald-100/70 hover:bg-white/5"
+                }`}
+              >
+                Last 30 days
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -93,11 +161,11 @@ export function FolioProgressChart() {
       <div className="relative flex-1 flex items-stretch mt-2 z-10">
         {/* Y-Axis Labels */}
         <div className="flex flex-col justify-between text-[10px] text-emerald-200/50 font-medium pr-2 pb-6 select-none shrink-0">
-          <span>100%</span>
-          <span>75%</span>
-          <span>50%</span>
-          <span>25%</span>
-          <span>0%</span>
+          <span>60m</span>
+          <span>45m</span>
+          <span>30m</span>
+          <span>15m</span>
+          <span>0m</span>
         </div>
 
         {/* SVG Graphic Container */}
@@ -138,17 +206,19 @@ export function FolioProgressChart() {
             })}
 
             {/* Filled Area */}
-            <path d={areaPath} fill="url(#folioAreaGradient)" />
+            {areaPath && <path d={areaPath} fill="url(#folioAreaGradient)" />}
 
             {/* Glowing Smooth Line */}
-            <path
-              d={linePath}
-              fill="none"
-              stroke="#34D399"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            {linePath && (
+              <path
+                d={linePath}
+                fill="none"
+                stroke="#34D399"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
 
             {/* Peak Tooltip Vertical Dotted Line */}
             {activeCoord && (
@@ -202,28 +272,34 @@ export function FolioProgressChart() {
             >
               <div className="bg-[#07241C] border border-[#1B5746] rounded-xl px-2.5 py-1.5 shadow-lg shadow-black/40 text-center">
                 <p className="text-[10px] text-emerald-200/70 font-medium leading-none">
-                  {activePoint.displayDate}
+                  {activePoint.displayDate} ({activePoint.date})
                 </p>
                 <p className="text-xs font-bold text-white leading-tight mt-0.5 whitespace-nowrap">
-                  Quiz score: {activePoint.score}%
+                  {activePoint.minutes}m studied • {activePoint.sessions} session{activePoint.sessions === 1 ? "" : "s"}
                 </p>
               </div>
             </div>
           )}
 
           {/* X-Axis Date Labels */}
-          <div className="flex justify-between text-[10px] text-emerald-200/60 font-medium pt-2 select-none">
-            {points.map((p, idx) => (
-              <span
-                key={p.date}
-                onClick={() => setActivePointIndex(idx)}
-                className={`cursor-pointer transition-colors ${
-                  activePointIndex === idx ? "text-emerald-300 font-bold" : "hover:text-emerald-200"
-                }`}
-              >
-                {p.displayDate}
-              </span>
-            ))}
+          <div className="flex justify-between text-[10px] text-emerald-200/60 font-medium pt-2 select-none overflow-hidden">
+            {points.map((p, idx) => {
+              // For 30 days view, only display every 5th label to prevent clutter
+              if (selectedRange === 30 && idx % 5 !== 0 && idx !== points.length - 1) {
+                return null;
+              }
+              return (
+                <span
+                  key={p.date + idx}
+                  onClick={() => setActivePointIndex(idx)}
+                  className={`cursor-pointer transition-colors ${
+                    activePointIndex === idx ? "text-emerald-300 font-bold" : "hover:text-emerald-200"
+                  }`}
+                >
+                  {p.displayDate}
+                </span>
+              );
+            })}
           </div>
         </div>
       </div>

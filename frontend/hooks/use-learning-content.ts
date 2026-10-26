@@ -37,10 +37,11 @@ export function useLearningContent(buddyId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["flashcards", buddyId] });
     },
-    onError: (error: any) => {
-      if (error.status === 403) {
+    onError: (error: unknown) => {
+      const err = error as { status?: number; data?: { message?: string } };
+      if (err.status === 403) {
         toast.error("Generation Limit Reached", {
-          description: error.data?.message || "Flashcard limit reached on Free plan.",
+          description: err.data?.message || "Flashcard limit reached on Free plan.",
           action: {
             label: "Upgrade",
             onClick: () => window.location.href = "/dashboard/pricing",
@@ -58,10 +59,11 @@ export function useLearningContent(buddyId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quizzes", buddyId] });
     },
-    onError: (error: any) => {
-      if (error.status === 403) {
+    onError: (error: unknown) => {
+      const err = error as { status?: number; data?: { message?: string } };
+      if (err.status === 403) {
         toast.error("Quiz Limit Reached", {
-          description: error.data?.message || "Quiz limit reached on Free plan.",
+          description: err.data?.message || "Quiz limit reached on Free plan.",
           action: {
             label: "Upgrade",
             onClick: () => window.location.href = "/dashboard/pricing",
@@ -83,14 +85,15 @@ export function useLearningContent(buddyId: string) {
     flashcards: {
       data: Array.isArray(flashcards.data) 
         ? flashcards.data 
-        : (flashcards.data as any)?.flashcards || [],
+        : (flashcards.data as { flashcards?: unknown[] })?.flashcards || [],
       isLoading: flashcards.isLoading,
       generate: generateFlashcards,
     },
     quizzes: {
       data: Array.isArray(quizzes.data) 
         ? quizzes.data 
-        : ((quizzes.data as any)?.quiz || (quizzes.data as any)?.quizzes || []),
+        : ((quizzes.data as { quiz?: unknown[]; quizzes?: unknown[] })?.quiz || 
+           (quizzes.data as { quiz?: unknown[]; quizzes?: unknown[] })?.quizzes || []),
       isLoading: quizzes.isLoading,
       generate: generateQuiz,
     },

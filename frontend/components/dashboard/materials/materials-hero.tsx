@@ -4,15 +4,27 @@ import * as React from "react";
 import Image from "next/image";
 import { FileText, Folder, HardDrive, Plus, FolderPlus } from "lucide-react";
 import { useAllDocuments } from "@/hooks/use-all-documents";
+import { useBuddies } from "@/hooks/use-buddies";
 
 interface MaterialsHeroProps {
   onUploadClick: () => void;
   onCreateCollectionClick: () => void;
 }
 
+function formatBytes(bytes: number): string {
+  if (!bytes || bytes === 0) return "0 MB";
+  const mb = bytes / (1024 * 1024);
+  if (mb < 0.1) return `${Math.round(bytes / 1024)} KB`;
+  return `${mb.toFixed(1)} MB`;
+}
+
 export function MaterialsHero({ onUploadClick, onCreateCollectionClick }: MaterialsHeroProps) {
   const { documents } = useAllDocuments();
-  const totalCount = documents?.length ? Math.max(12, documents.length) : 12;
+  const { buddies } = useBuddies();
+
+  const totalCount = documents.length;
+  const collectionsCount = buddies ? buddies.length : 0;
+  const totalBytes = documents.reduce((acc, d) => acc + (d.fileSize || 0), 0);
 
   return (
     <div className="relative overflow-hidden rounded-3xl bg-transparent pt-2 pb-4">
@@ -55,7 +67,7 @@ export function MaterialsHero({ onUploadClick, onCreateCollectionClick }: Materi
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-extrabold text-slate-900 leading-tight">
-                  4
+                  {collectionsCount}
                 </span>
                 <span className="text-[10px] text-slate-400 font-semibold">
                   Collections
@@ -70,7 +82,7 @@ export function MaterialsHero({ onUploadClick, onCreateCollectionClick }: Materi
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-extrabold text-slate-900 leading-tight">
-                  18.6 MB
+                  {formatBytes(totalBytes)}
                 </span>
                 <span className="text-[10px] text-slate-400 font-semibold">
                   Storage Used
@@ -101,37 +113,27 @@ export function MaterialsHero({ onUploadClick, onCreateCollectionClick }: Materi
             </button>
           </div>
 
-          {/* Character + Speech Bubble */}
+          {/* Character + Speech bubble */}
           <div className="relative flex items-center justify-end select-none mt-2">
-            {/* Speech Bubble */}
-            <div className="relative mr-3 max-w-[210px] sm:max-w-[230px] rounded-2xl bg-[#EBF4EE] border border-[#D4E7DC] p-3 shadow-2xs">
-              <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-3 h-3 bg-[#EBF4EE] border-t border-r border-[#D4E7DC] rotate-45" />
+            <div className="relative mr-2 sm:mr-3 max-w-[190px] rounded-2xl bg-[#EBF4EE] border border-[#D4E7DC] p-3 shadow-2xs">
+              <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#EBF4EE] border-t border-r border-[#D4E7DC] rotate-45" />
               <p className="font-handwriting text-base text-[#133226] font-bold leading-tight">
-                Great materials lead to great results!
+                All your knowledge,
               </p>
-              <p className="font-handwriting text-xs text-[#234839] leading-snug mt-1">
-                Upload something new or turn your existing files into study tools.
-              </p>
-              <p className="font-handwriting text-xs text-[#234839] text-right mt-1 font-semibold">
-                — Folio
+              <p className="font-handwriting text-xs text-[#234839] leading-snug mt-0.5">
+                neatly organized and ready to study.
               </p>
             </div>
 
-            {/* Character Image */}
-            <div className="relative">
-              <div className="absolute -left-2 top-6 text-amber-500 text-xs font-black tracking-widest rotate-[-15deg] pointer-events-none">
-                \ | /
-              </div>
-              <div className="relative w-36 h-40 sm:w-44 sm:h-48 shrink-0">
-                <Image
-                  src="/images/folio.png"
-                  alt="Folio Character"
-                  width={180}
-                  height={190}
-                  priority
-                  className="w-full h-full object-contain object-bottom drop-shadow-sm"
-                />
-              </div>
+            <div className="relative w-28 h-32 sm:w-32 sm:h-36 shrink-0">
+              <Image
+                src="/images/folio.png"
+                alt="Folio character"
+                width={130}
+                height={145}
+                priority
+                className="w-full h-full object-contain object-bottom drop-shadow-xs"
+              />
             </div>
           </div>
         </div>

@@ -1,60 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { Target, Check, ArrowRight, Layers, MessageSquare, BookOpen } from "lucide-react";
+import { Target, Check, Layers, MessageSquare, BookOpen } from "lucide-react";
 import Link from "next/link";
+import { useDashboardGoals, DashboardGoal } from "@/hooks/use-dashboard-goals";
 
-interface GoalItem {
-  id: string;
-  title: string;
-  current: number;
-  target: number;
-  isCompleted: boolean;
-  icon: any;
-  href: string;
-}
+const GOAL_ICONS: Record<string, { icon: typeof BookOpen; href: string }> = {
+  study_time: { icon: BookOpen, href: "/dashboard/documents" },
+  quizzes: { icon: Target, href: "/dashboard/quizzes" },
+  flashcards: { icon: Layers, href: "/dashboard/flashcards" },
+  chat_questions: { icon: MessageSquare, href: "/dashboard/chat" },
+};
 
 export function FolioGoalsCard() {
-  const [goals, setGoals] = React.useState<GoalItem[]>([
-    {
-      id: "1",
-      title: "Study 2 chapters",
-      current: 1,
-      target: 2,
-      isCompleted: false,
-      icon: BookOpen,
-      href: "/dashboard/documents",
-    },
-    {
-      id: "2",
-      title: "Complete 1 quiz",
-      current: 1,
-      target: 1,
-      isCompleted: true,
-      icon: Target,
-      href: "/dashboard/buddies",
-    },
-    {
-      id: "3",
-      title: "Review flashcards",
-      current: 0,
-      target: 1,
-      isCompleted: false,
-      icon: Layers,
-      href: "/dashboard/buddies",
-    },
-    {
-      id: "4",
-      title: "Ask Folio 3 questions",
-      current: 1,
-      target: 3,
-      isCompleted: false,
-      icon: MessageSquare,
-      href: "/dashboard/buddies",
-    },
-  ]);
+  const { goalsData, isLoading } = useDashboardGoals();
 
-  const completedCount = goals.filter((g) => g.isCompleted || g.current >= g.target).length;
+  const { goals, completedGoalsCount, totalGoalsCount } = goalsData;
 
   return (
     <div className="rounded-3xl bg-white p-5 shadow-xs border border-[#E5EAE7] flex flex-col justify-between h-full min-h-[300px]">
@@ -67,76 +28,81 @@ export function FolioGoalsCard() {
           <h4 className="text-sm font-bold text-[#11231B] tracking-tight">Today&apos;s Goals</h4>
         </div>
         <span className="text-[11px] font-semibold text-slate-400">
-          {completedCount}/{goals.length} completed
+          {completedGoalsCount}/{totalGoalsCount} completed
         </span>
       </div>
 
       {/* Goal List */}
       <div className="space-y-3 my-auto">
-        {goals.map((goal) => {
-          const isDone = goal.isCompleted || goal.current >= goal.target;
-          const progressPct = Math.min(100, Math.round((goal.current / goal.target) * 100));
+        {goals.map((goal: DashboardGoal) => {
+          const config = GOAL_ICONS[goal.id] || { icon: Target, href: "/dashboard" };
+          const IconComponent = config.icon;
+          const isDone = goal.completed;
 
           return (
-            <div
+            <Link
               key={goal.id}
-              className="flex items-center justify-between gap-3 p-2 rounded-xl hover:bg-slate-50/80 transition-colors"
+              href={config.href}
+              className="flex items-center justify-between gap-3 p-2 rounded-xl hover:bg-slate-50/80 transition-colors group"
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {/* Left Status Icon */}
                 <div
-                  className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 ${
+                  className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 transition-all ${
                     isDone
-                      ? "bg-[#0D382B] text-white"
-                      : "bg-[#112B22]/10 text-[#0D382B]"
+                      ? "bg-[#0D382B] text-white shadow-xs"
+                      : "bg-[#112B22]/10 text-[#0D382B] group-hover:bg-[#112B22]/20"
                   }`}
                 >
                   {isDone ? (
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
                   ) : (
-                    <goal.icon className="w-3.5 h-3.5" />
+                    <IconComponent className="w-3.5 h-3.5" />
                   )}
                 </div>
 
                 {/* Title & Progress Bar */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-slate-800 truncate">
+                  <div className="flex items-center justify-between gap-2">
+                    <p
+                      className={`text-xs font-semibold truncate ${
+                        isDone ? "text-slate-500 line-through" : "text-[#11231B]"
+                      }`}
+                    >
                       {goal.title}
-                    </span>
-                    <span className="text-[10px] font-medium text-slate-400 shrink-0 ml-2">
-                      {goal.current}/{goal.target}
+                    </p>
+                    <span className="text-[11px] font-bold text-slate-500 shrink-0">
+                      {goal.current}/{goal.target} {goal.unit}
                     </span>
                   </div>
 
-                  {/* Progress Line */}
-                  <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+                  {/* Progress track */}
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-1.5">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         isDone ? "bg-[#0D382B]" : "bg-emerald-500"
                       }`}
-                      style={{ width: `${progressPct}%` }}
+                      style={{ width: `${goal.percentage}%` }}
                     />
                   </div>
                 </div>
               </div>
-
-              {/* Action Button: Checkmark or Arrow */}
-              {isDone ? (
-                <div className="h-6 w-6 rounded-full bg-[#E8F2EC] text-[#0D382B] flex items-center justify-center shrink-0">
-                  <Check className="w-3 h-3 stroke-[3]" />
-                </div>
-              ) : (
-                <Link
-                  href={goal.href}
-                  className="h-6 w-6 rounded-full bg-slate-100 hover:bg-[#0D382B] hover:text-white text-slate-500 flex items-center justify-center shrink-0 transition-colors"
-                >
-                  <ArrowRight className="w-3 h-3" />
-                </Link>
-              )}
-            </div>
+            </Link>
           );
         })}
+      </div>
+
+      {/* Footer Encouragement Note */}
+      <div className="pt-2 text-center">
+        {completedGoalsCount === totalGoalsCount ? (
+          <p className="text-[11px] font-bold text-emerald-800 bg-emerald-50 py-1.5 px-3 rounded-full inline-block">
+            🌟 All goals accomplished for today! Outstanding work!
+          </p>
+        ) : (
+          <p className="text-[11px] font-medium text-slate-400">
+            Keep completing tasks to fill your daily rings.
+          </p>
+        )}
       </div>
     </div>
   );

@@ -2,14 +2,19 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Flame } from "lucide-react";
 import Link from "next/link";
+import { useStreak } from "@/hooks/use-streak";
 
 interface FolioStreakCardProps {
   streakDays?: number;
 }
 
-export function FolioStreakCard({ streakDays = 3 }: FolioStreakCardProps) {
+export function FolioStreakCard({ streakDays: propStreak }: FolioStreakCardProps) {
+  const { streak } = useStreak();
+
+  const days = propStreak !== undefined ? propStreak : streak.streakDays;
+
   return (
     <div className="relative overflow-hidden rounded-3xl bg-[#0D382B] p-5 text-white shadow-xs border border-emerald-950/20 flex items-center justify-between gap-4 h-full min-h-[220px]">
       {/* Background ambient pattern */}
@@ -31,12 +36,14 @@ export function FolioStreakCard({ streakDays = 3 }: FolioStreakCardProps) {
         <div className="flex items-center gap-1.5 mb-1">
           <span className="text-base font-bold text-white tracking-tight flex items-center gap-1.5">
             <span>🔥</span>
-            <span>{streakDays} Day Streak</span>
+            <span>{days} Day Streak</span>
           </span>
         </div>
 
         <p className="text-xs text-emerald-100/70 font-medium leading-snug">
-          That&apos;s {streakDays} days in a row! Keep the momentum going.
+          {days > 0
+            ? `That's ${days} day${days === 1 ? "" : "s"} in a row! Keep the momentum going.`
+            : "Complete a study session today to ignite your learning streak!"}
         </p>
 
         <div className="mt-3">
@@ -44,7 +51,7 @@ export function FolioStreakCard({ streakDays = 3 }: FolioStreakCardProps) {
             href="/dashboard/documents"
             className="inline-flex items-center gap-1.5 rounded-full bg-white text-[#0D382B] px-4 py-1.5 text-xs font-bold hover:bg-emerald-50 transition-all shadow-2xs active:scale-95"
           >
-            <span>View your streak</span>
+            <span>{days > 0 ? "View your streak" : "Start learning"}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
