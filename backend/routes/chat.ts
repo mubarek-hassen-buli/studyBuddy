@@ -11,7 +11,7 @@ import { eq, and, desc, asc, count } from "drizzle-orm";
 import { rateLimiter } from "../middleware/rate-limiter";
 import { incrementQuota } from "../middleware/quota-checker";
 import { Stream } from "@elysiajs/stream";
-import { ragService } from "../services/rag";
+import { ragService, RetrievalResult } from "../services/rag";
 import {
   sendChatMessageSchema,
   createConversationSchema,
@@ -230,14 +230,14 @@ export const chatRoutes = new Elysia({ prefix: "/api/chat" })
       }
     }
 
-    let contextChunks: any[] = [];
+    let contextChunks: RetrievalResult[] = [];
     if (useMaterials && collectionName) {
       try {
         contextChunks = await ragService.retrieveContext(collectionName, message);
         for (const item of contextChunks) {
           if (!item.metadata?.fileName && item.metadata?.documentId) {
             const doc = await db.query.documents.findFirst({
-              where: eq(documents.id, item.metadata.documentId),
+              where: eq(documents.id, String(item.metadata.documentId)),
             });
             if (doc) item.metadata.fileName = doc.fileName;
           }

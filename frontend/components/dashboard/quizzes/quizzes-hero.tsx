@@ -3,12 +3,16 @@
 import * as React from "react";
 import Image from "next/image";
 import { FileCheck, Shuffle, Link as LinkIcon, Trophy, ArrowRight } from "lucide-react";
+import { useQuizzes } from "@/hooks/use-quizzes";
+import { useStreak } from "@/hooks/use-streak";
 
 interface QuizzesHeroProps {
   onChallengeClick?: () => void;
 }
 
 export function QuizzesHero({ onChallengeClick }: QuizzesHeroProps) {
+  const { overview } = useQuizzes();
+  const { streak } = useStreak();
   return (
     <div className="relative overflow-hidden rounded-3xl bg-transparent pt-1 pb-4">
       {/* Top Section: Title & Classical Philosopher Character */}
@@ -73,7 +77,7 @@ export function QuizzesHero({ onChallengeClick }: QuizzesHeroProps) {
           </div>
           <div className="flex flex-col">
             <span className="text-base sm:text-lg font-extrabold text-[#11231B] leading-tight">
-              12
+              {overview.quizzesTaken}
             </span>
             <span className="text-[11px] text-slate-400 font-semibold">
               Quizzes Taken
@@ -88,7 +92,7 @@ export function QuizzesHero({ onChallengeClick }: QuizzesHeroProps) {
           </div>
           <div className="flex flex-col">
             <span className="text-base sm:text-lg font-extrabold text-[#11231B] leading-tight">
-              78%
+              {overview.averageScore}%
             </span>
             <span className="text-[11px] text-slate-400 font-semibold">
               Average Score
@@ -103,7 +107,7 @@ export function QuizzesHero({ onChallengeClick }: QuizzesHeroProps) {
           </div>
           <div className="flex flex-col">
             <span className="text-base sm:text-lg font-extrabold text-[#11231B] leading-tight">
-              4
+              {streak.streakDays}
             </span>
             <span className="text-[11px] text-slate-400 font-semibold">
               Streak Days

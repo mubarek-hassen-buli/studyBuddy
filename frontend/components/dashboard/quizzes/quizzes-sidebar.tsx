@@ -11,50 +11,43 @@ import {
   ChevronRight,
   ArrowRight,
   FileText,
-  Code2,
-  FlaskConical,
-  BookOpen,
+  CheckCircle2,
 } from "lucide-react";
+import { useQuizzes, QuizAttemptRecord } from "@/hooks/use-quizzes";
 
 interface QuizzesSidebarProps {
   onGenerateQuizClick?: () => void;
   onCreateFlashcardsClick?: () => void;
   onRandomQuizClick?: () => void;
+  onSelectAttempt?: (quizId: string) => void;
+}
+
+function formatRelativeTime(dateStr: string): string {
+  try {
+    const diffMs = Date.now() - new Date(dateStr).getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return "Yesterday";
+    return `${diffDays}d ago`;
+  } catch {
+    return "Recently";
+  }
 }
 
 export function QuizzesSidebar({
   onGenerateQuizClick,
   onCreateFlashcardsClick,
   onRandomQuizClick,
+  onSelectAttempt,
 }: QuizzesSidebarProps) {
   const [isQuickActionsOpen, setIsQuickActionsOpen] = React.useState(true);
+  const { overview } = useQuizzes();
 
-  const recentQuizzes = [
-    {
-      id: "rq-1",
-      title: "Cell Biology Basics",
-      subtitle: "12 questions · 78%",
-      icon: FileText,
-    },
-    {
-      id: "rq-2",
-      title: "Python Fundamentals",
-      subtitle: "15 questions · 90%",
-      icon: Code2,
-    },
-    {
-      id: "rq-3",
-      title: "Organic Chemistry",
-      subtitle: "10 questions · 60%",
-      icon: FlaskConical,
-    },
-    {
-      id: "rq-4",
-      title: "World History: Modern Era",
-      subtitle: "14 questions · 85%",
-      icon: BookOpen,
-    },
-  ];
+  const recentAttempts = overview.recentAttempts || [];
 
   return (
     <aside className="w-full lg:w-80 space-y-4 font-sans">
@@ -87,7 +80,7 @@ export function QuizzesSidebar({
                   Generate Quiz
                 </span>
                 <span className="text-[11px] text-slate-400">
-                  From your materials
+                  From your materials or topic
                 </span>
               </div>
             </button>
@@ -103,10 +96,10 @@ export function QuizzesSidebar({
               </div>
               <div className="flex flex-col flex-1">
                 <span className="text-xs font-bold text-[#11231B] leading-tight">
-                  Create Flashcards
+                  Practice Flashcards
                 </span>
                 <span className="text-[11px] text-slate-400">
-                  From your notes
+                  Review spaced repetition decks
                 </span>
               </div>
             </Link>
@@ -121,10 +114,10 @@ export function QuizzesSidebar({
               </div>
               <div className="flex flex-col flex-1">
                 <span className="text-xs font-bold text-[#11231B] leading-tight">
-                  Take a Random Quiz
+                  Random Quiz Challenge
                 </span>
                 <span className="text-[11px] text-slate-400">
-                  Challenge yourself now
+                  Quick test your knowledge
                 </span>
               </div>
             </button>
@@ -136,38 +129,46 @@ export function QuizzesSidebar({
       <div className="bg-white border border-[#E5EAE7] rounded-2xl p-4 shadow-2xs">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xs sm:text-sm font-bold text-[#11231B]">Recent Quizzes</h2>
-          <button className="text-[11px] font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-0.5">
-            <span>View All</span>
-            <ArrowRight className="w-3 h-3" />
-          </button>
+          <span className="text-[11px] font-bold text-emerald-800">
+            {overview.quizzesTaken} Total
+          </span>
         </div>
 
-        <div className="space-y-2">
-          {recentQuizzes.map((quiz) => {
-            const Icon = quiz.icon;
-            return (
+        {recentAttempts.length > 0 ? (
+          <div className="space-y-2">
+            {recentAttempts.map((attempt: QuizAttemptRecord) => (
               <div
-                key={quiz.id}
+                key={attempt.id}
+                onClick={() => onSelectAttempt?.(attempt.quizId)}
                 className="flex items-center justify-between p-2 rounded-xl hover:bg-[#F4F8F5] transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="h-8 w-8 rounded-lg bg-[#E8F5EE] text-[#1B4B38] flex items-center justify-center shrink-0">
-                    <Icon className="w-4 h-4" />
+                  <div className="h-8 w-8 rounded-lg bg-[#E8F5EE] text-[#1B4B38] flex items-center justify-center shrink-0 font-bold text-xs">
+                    {attempt.percentage}%
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="text-xs font-bold text-[#11231B] truncate leading-tight">
-                      {quiz.title}
+                      {attempt.title}
                     </span>
                     <span className="text-[10px] text-slate-400">
-                      {quiz.subtitle}
+                      {attempt.score}/{attempt.totalQuestions} correct · {formatRelativeTime(attempt.completedAt)}
                     </span>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-800 shrink-0" />
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-4 text-center">
+            <p className="text-xs text-slate-400">
+              No recent attempts yet.
+            </p>
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              Complete a quiz to track your mastery scores here!
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 3. Bottom Motivational Card (Dark Green) */}

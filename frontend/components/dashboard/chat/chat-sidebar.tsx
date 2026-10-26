@@ -11,21 +11,47 @@ import {
   CheckCircle,
   MessageSquare,
   ChevronRight,
-  ArrowRight,
+  Plus,
+  Trash2,
 } from "lucide-react";
+import { ChatConversationItem } from "@/hooks/use-chat-session";
 
 interface ChatSidebarProps {
   useMaterials: boolean;
   onToggleUseMaterials: (val: boolean) => void;
   onSelectPrompt: (prompt: string) => void;
-  onSelectRecentChat: (title: string) => void;
+  conversations: ChatConversationItem[];
+  activeConversationId: string | null;
+  onSelectConversation: (id: string) => void;
+  onNewChat: () => void;
+  onDeleteConversation: (id: string) => void;
+}
+
+function formatRelativeTime(dateStr: string): string {
+  try {
+    const diffMs = Date.now() - new Date(dateStr).getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return "Yesterday";
+    return `${diffDays}d ago`;
+  } catch {
+    return "Recently";
+  }
 }
 
 export function ChatSidebar({
   useMaterials,
   onToggleUseMaterials,
   onSelectPrompt,
-  onSelectRecentChat,
+  conversations,
+  activeConversationId,
+  onSelectConversation,
+  onNewChat,
+  onDeleteConversation,
 }: ChatSidebarProps) {
   const quickPrompts = [
     {
@@ -58,31 +84,17 @@ export function ChatSidebar({
     },
   ];
 
-  const recentChats = [
-    {
-      id: "rc-1",
-      title: "Photosynthesis vs Cellular Respiration",
-      time: "Today · 10:26 AM",
-    },
-    {
-      id: "rc-2",
-      title: "Quantum Mechanics Basics",
-      time: "Yesterday · 4:12 PM",
-    },
-    {
-      id: "rc-3",
-      title: "Essay on Climate Change",
-      time: "Oct 23 · 2:18 PM",
-    },
-    {
-      id: "rc-4",
-      title: "Organic Chemistry - Reaction Mechanisms",
-      time: "Oct 21 · 11:03 AM",
-    },
-  ];
-
   return (
     <aside className="w-full lg:w-80 space-y-4 font-sans">
+      {/* 0. New Chat Button */}
+      <button
+        onClick={onNewChat}
+        className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0D382B] hover:bg-[#07251C] text-white text-xs font-bold py-3 px-4 shadow-sm transition-all active:scale-95"
+      >
+        <Plus className="w-4 h-4" />
+        <span>New Discussion</span>
+      </button>
+
       {/* 1. Chat with your materials card */}
       <div className="bg-white border border-[#E5EAE7] rounded-2xl p-4 shadow-2xs">
         <div className="flex items-start gap-3">
@@ -94,7 +106,7 @@ export function ChatSidebar({
               Chat with your materials
             </h3>
             <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
-              Folio can base its answers on your uploaded notes, PDFs, and documents.
+              Folio grounds answers in your uploaded notes, PDFs, and study materials.
             </p>
           </div>
         </div>
@@ -165,35 +177,73 @@ export function ChatSidebar({
       <div className="bg-white border border-[#E5EAE7] rounded-2xl p-4 shadow-2xs">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs sm:text-sm font-bold text-[#11231B]">
-            Recent Chats
+            Recent Discussions
           </h3>
-          <button className="text-[11px] font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-0.5">
-            <span>View all</span>
-            <ArrowRight className="w-3 h-3" />
-          </button>
+          <span className="text-[11px] font-bold text-emerald-800">
+            {conversations.length}
+          </span>
         </div>
 
-        <div className="space-y-2">
-          {recentChats.map((chat) => (
-            <div
-              key={chat.id}
-              onClick={() => onSelectRecentChat(chat.title)}
-              className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-[#F4F8F5] transition-all cursor-pointer group"
-            >
-              <div className="h-7 w-7 rounded-lg bg-[#F4F6F4] text-slate-500 group-hover:bg-[#E8F5EE] group-hover:text-[#0D382B] flex items-center justify-center shrink-0 mt-0.5">
-                <MessageSquare className="w-3.5 h-3.5" />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-xs font-bold text-[#11231B] truncate leading-tight group-hover:text-emerald-950">
-                  {chat.title}
-                </span>
-                <span className="text-[10px] text-slate-400 mt-0.5">
-                  {chat.time}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        {conversations.length > 0 ? (
+          <div className="space-y-1.5 max-h-[280px] overflow-y-auto pr-1">
+            {conversations.map((chat) => {
+              const isActive = activeConversationId === chat.id;
+              return (
+                <div
+                  key={chat.id}
+                  className={`flex items-center justify-between p-2 rounded-xl transition-all cursor-pointer group ${
+                    isActive
+                      ? "bg-[#E8F3EC] border border-[#CDE3D5]"
+                      : "hover:bg-[#F4F8F5] border border-transparent"
+                  }`}
+                >
+                  <div
+                    onClick={() => onSelectConversation(chat.id)}
+                    className="flex items-start gap-2.5 min-w-0 flex-1"
+                  >
+                    <div
+                      className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                        isActive
+                          ? "bg-[#0D382B] text-white"
+                          : "bg-[#F4F6F4] text-slate-500 group-hover:bg-[#E8F5EE] group-hover:text-[#0D382B]"
+                      }`}
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-xs font-bold text-[#11231B] truncate leading-tight">
+                        {chat.title}
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-0.5">
+                        {formatRelativeTime(chat.updatedAt)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteConversation(chat.id);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-rose-600 rounded-md transition-all shrink-0 ml-1"
+                    title="Delete discussion"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="py-4 text-center">
+            <p className="text-xs text-slate-400">
+              No past discussions yet.
+            </p>
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              Ask any question to begin!
+            </p>
+          </div>
+        )}
       </div>
     </aside>
   );

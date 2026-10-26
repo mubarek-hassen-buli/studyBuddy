@@ -5,9 +5,9 @@ import { qdrantService } from "./qdrant";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-2.5-flash" });
 
-interface RetrievalResult {
+export interface RetrievalResult {
     content: string;
-    metadata: any;
+    metadata: Record<string, unknown>;
     score: number;
 }
 
@@ -28,7 +28,7 @@ export const ragService = {
 
     return searchResults.map(res => ({
         content: res.payload?.content as string,
-        metadata: res.payload,
+        metadata: (res.payload as Record<string, unknown>) || {},
         score: res.score,
     }));
   },
