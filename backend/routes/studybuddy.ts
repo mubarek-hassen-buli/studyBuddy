@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { auth } from "../auth";
 import { db } from "../db";
-import { studyBuddies, documents, usage, users, studySessions } from "../db/schema";
+import { studyBuddies, documents, usage, users, studySessions, quizzes, quizAttempts, flashcards } from "../db/schema";
 import { eq, and, desc, count } from "drizzle-orm";
 import { createStudyBuddySchema, updateStudyBuddySchema } from "../validators/studybuddy";
 import { rateLimiter } from "../middleware/rate-limiter";
@@ -180,6 +180,137 @@ export const studyBuddyRoutes = new Elysia({ prefix: "/api/studybuddy" })
         activityTimeline,
         radialMetrics,
     };
+  })
+  .get("/recent-activity", async ({ user }) => {
+    // 1. Recent completed study sessions
+    const recentSessions = await db.query.studySessions.findMany({
+      where: and(eq(studySessions.userId, user!.id), eq(studySessions.status, "completed")),
+      with: { studyBuddy: true },
+      orderBy: [desc(studySessions.updatedAt)],
+      limit: 5,
+    });
+
+    // 2. Recent uploaded documents
+    const recentDocs = await db
+      .select({
+        id: documents.id,
+        fileName: documents.fileName,
+        fileType: documents.fileType,
+        fileSize: documents.fileSize,
+        createdAt: documents.createdAt,
+        studyBuddyName: studyBuddies.name,
+      })
+      .from(documents)
+      .innerJoin(studyBuddies, eq(documents.studyBuddyId, studyBuddies.id))
+      .where(eq(studyBuddies.userId, user!.id))
+      .orderBy(desc(documents.createdAt))
+      .limit(5);
+
+    // 3. Recent quiz attempts
+    const recentAttempts = await db
+      .select({
+        id: quizAttempts.id,
+        score: quizAttempts.score,
+        totalQuestions: quizAttempts.totalQuestions,
+        percentage: quizAttempts.percentage,
+        completedAt: quizAttempts.completedAt,
+        quizTitle: quizzes.title,
+        quizTopic: quizzes.topic,
+        studyBuddyName: studyBuddies.name,
+      })
+      .from(quizAttempts)
+      .innerJoin(quizzes, eq(quizAttempts.quizId, quizzes.id))
+      .innerJoin(studyBuddies, eq(quizzes.studyBuddyId, studyBuddies.id))
+      .where(eq(quizAttempts.userId, user!.id))
+      .orderBy(desc(quizAttempts.completedAt))
+      .limit(5);
+
+    // 4. Recent reviewed flashcards
+    const recentCards = await db
+      .select({
+        id: flashcards.id,
+        question: flashcards.question,
+        masteryLevel: flashcards.masteryLevel,
+        lastReviewedAt: flashcards.lastReviewedAt,
+        createdAt: flashcards.createdAt,
+        studyBuddyName: studyBuddies.name,
+      })
+      .from(flashcards)
+      .innerJoin(studyBuddies, eq(flashcards.studyBuddyId, studyBuddies.id))
+      .where(eq(studyBuddies.userId, user!.id))
+      .orderBy(desc(flashcards.lastReviewedAt))
+      .limit(5);
+
+    // Format unified activity items
+    type UnifiedActivity = {
+      id: string;
+      type: "session" | "document" | "quiz" | "flashcard";
+      title: string;
+      description: string;
+      timestamp: string;
+      badge: string;
+      score?: number;
+      studyBuddyName?: string;
+    };
+
+    const activities: UnifiedActivity[] = [];
+
+    recentSessions.forEach((s) => {
+      const minutes = Math.max(1, Math.round((s.actualDurationSeconds || 60) / 60));
+      activities.push({
+        id: `session-${s.id}`,
+        type: "session",
+        title: s.title || "Focused Study Session",
+        description: `Completed ${minutes}m focus session with ${s.studyBuddy?.name || "Buddy"}`,
+        timestamp: (s.updatedAt || s.createdAt).toISOString(),
+        badge: `${minutes}m`,
+        studyBuddyName: s.studyBuddy?.name,
+      });
+    });
+
+    recentDocs.forEach((d) => {
+      activities.push({
+        id: `doc-${d.id}`,
+        type: "document",
+        title: d.fileName,
+        description: `Uploaded material for ${d.studyBuddyName}`,
+        timestamp: d.createdAt.toISOString(),
+        badge: d.fileType.toUpperCase(),
+        studyBuddyName: d.studyBuddyName,
+      });
+    });
+
+    recentAttempts.forEach((a) => {
+      activities.push({
+        id: `quiz-${a.id}`,
+        type: "quiz",
+        title: a.quizTitle || a.quizTopic || "Subject Quiz",
+        description: `Scored ${a.score}/${a.totalQuestions} (${a.percentage}%)`,
+        timestamp: a.completedAt.toISOString(),
+        badge: `${a.percentage}%`,
+        score: a.percentage,
+        studyBuddyName: a.studyBuddyName,
+      });
+    });
+
+    recentCards.forEach((c) => {
+      if (c.lastReviewedAt) {
+        activities.push({
+          id: `card-${c.id}`,
+          type: "flashcard",
+          title: `${c.studyBuddyName} Flashcard`,
+          description: `Reviewed card (Mastery Level ${c.masteryLevel}/3)`,
+          timestamp: c.lastReviewedAt.toISOString(),
+          badge: `Lv ${c.masteryLevel}`,
+          studyBuddyName: c.studyBuddyName,
+        });
+      }
+    });
+
+    // Sort descending by timestamp
+    activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    return activities.slice(0, 6);
   })
   .get("/", async ({ user }) => {
     return await db.query.studyBuddies.findMany({

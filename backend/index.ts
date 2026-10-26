@@ -33,7 +33,7 @@ const app = new Elysia({ adapter: node() })
   .listen(process.env.PORT || 3001);
 
 console.log(
-  `🦊 Elysia is running at http://localhost:3001`
+  `🦊 Elysia is running at http://localhost:3001 (StudyBuddy API)`
 );
 
 export default app;

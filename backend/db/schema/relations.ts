@@ -4,19 +4,22 @@ import { studyBuddies } from "./studybuddies";
 import { documents } from "./documents";
 import { chunks } from "./chunks";
 import { flashcards } from "./flashcards";
-import { quizzes } from "./quizzes";
+import { quizzes, quizAttempts } from "./quizzes";
 import { summaries } from "./summaries";
 import { usage } from "./usage";
 import { studySessions } from "./sessions";
+import { messages, chatConversations } from "./messages";
 
-// Users -> StudyBuddies (One to Many)
+// Users -> StudyBuddies, Usage, StudySessions, QuizAttempts, ChatConversations
 export const usersRelations = relations(users, ({ many }) => ({
   studyBuddies: many(studyBuddies),
   usage: many(usage),
   studySessions: many(studySessions),
+  quizAttempts: many(quizAttempts),
+  chatConversations: many(chatConversations),
 }));
 
-// StudyBuddies -> User (Many to One), StudyBuddies -> Documents (One to Many)
+// StudyBuddies -> User, Documents, Flashcards, Quizzes, Summaries, StudySessions, Messages, ChatConversations
 export const studyBuddiesRelations = relations(studyBuddies, ({ one, many }) => ({
   user: one(users, {
     fields: [studyBuddies.userId],
@@ -27,9 +30,11 @@ export const studyBuddiesRelations = relations(studyBuddies, ({ one, many }) => 
   quizzes: many(quizzes),
   summaries: many(summaries),
   studySessions: many(studySessions),
+  messages: many(messages),
+  chatConversations: many(chatConversations),
 }));
 
-// Documents -> StudyBuddy (Many to One), Documents -> Chunks (One to Many)
+// Documents -> StudyBuddy, Documents -> Chunks
 export const documentsRelations = relations(documents, ({ one, many }) => ({
   studyBuddy: one(studyBuddies, {
     fields: [documents.studyBuddyId],
@@ -38,7 +43,7 @@ export const documentsRelations = relations(documents, ({ one, many }) => ({
   chunks: many(chunks),
 }));
 
-// Chunks -> Document (Many to One)
+// Chunks -> Document
 export const chunksRelations = relations(chunks, ({ one }) => ({
   document: one(documents, {
     fields: [chunks.documentId],
@@ -54,10 +59,48 @@ export const flashcardsRelations = relations(flashcards, ({ one }) => ({
   }),
 }));
 
-// Quizzes -> StudyBuddy
-export const quizzesRelations = relations(quizzes, ({ one }) => ({
+// Quizzes -> StudyBuddy, Quizzes -> QuizAttempts
+export const quizzesRelations = relations(quizzes, ({ one, many }) => ({
   studyBuddy: one(studyBuddies, {
     fields: [quizzes.studyBuddyId],
+    references: [studyBuddies.id],
+  }),
+  attempts: many(quizAttempts),
+}));
+
+// QuizAttempts -> Quiz, QuizAttempts -> User
+export const quizAttemptsRelations = relations(quizAttempts, ({ one }) => ({
+  quiz: one(quizzes, {
+    fields: [quizAttempts.quizId],
+    references: [quizzes.id],
+  }),
+  user: one(users, {
+    fields: [quizAttempts.userId],
+    references: [users.id],
+  }),
+}));
+
+// ChatConversations -> User, ChatConversations -> StudyBuddy, ChatConversations -> Messages
+export const chatConversationsRelations = relations(chatConversations, ({ one, many }) => ({
+  user: one(users, {
+    fields: [chatConversations.userId],
+    references: [users.id],
+  }),
+  studyBuddy: one(studyBuddies, {
+    fields: [chatConversations.studyBuddyId],
+    references: [studyBuddies.id],
+  }),
+  messages: many(messages),
+}));
+
+// Messages -> ChatConversation, Messages -> StudyBuddy
+export const messagesRelations = relations(messages, ({ one }) => ({
+  conversation: one(chatConversations, {
+    fields: [messages.conversationId],
+    references: [chatConversations.id],
+  }),
+  studyBuddy: one(studyBuddies, {
+    fields: [messages.studyBuddyId],
     references: [studyBuddies.id],
   }),
 }));
@@ -70,7 +113,7 @@ export const summariesRelations = relations(summaries, ({ one }) => ({
   }),
 }));
 
-// Usage -> User (Many to One)
+// Usage -> User
 export const usageRelations = relations(usage, ({ one }) => ({
   user: one(users, {
     fields: [usage.userId],
@@ -78,7 +121,7 @@ export const usageRelations = relations(usage, ({ one }) => ({
   }),
 }));
 
-// StudySessions -> User (Many to One), StudySessions -> StudyBuddy (Many to One)
+// StudySessions -> User, StudySessions -> StudyBuddy
 export const studySessionsRelations = relations(studySessions, ({ one }) => ({
   user: one(users, {
     fields: [studySessions.userId],
@@ -89,3 +132,4 @@ export const studySessionsRelations = relations(studySessions, ({ one }) => ({
     references: [studyBuddies.id],
   }),
 }));
+

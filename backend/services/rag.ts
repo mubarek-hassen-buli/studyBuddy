@@ -97,5 +97,37 @@ ${contextText}
           const chunkText = chunk.text();
           yield chunkText;
       }
+  },
+
+  // 4. Stream ungrounded general academic response (when materials toggle is off or general query)
+  streamGeneralResponse: async function* (
+      query: string,
+      history: Array<{ role: "user" | "assistant"; content: string }> = []
+  ) {
+      const systemInstruction = `You are Folio, a distinguished, supportive, and erudite academic study companion.
+Your mission is to help students master challenging concepts with clarity, academic depth, and structured organization.
+Format responses cleanly with:
+- **Bold definitions** for key vocabulary
+- Structured bullet points and concise paragraphs
+- Practical real-world examples or analogies
+- A supportive, scholarly tone`;
+
+      const contents = [
+          ...history.slice(-8).map(h => ({
+              role: h.role === "assistant" ? "model" : "user",
+              parts: [{ text: h.content }]
+          })),
+          {
+              role: "user",
+              parts: [{ text: `${systemInstruction}\n\nStudent Query: ${query}` }]
+          }
+      ];
+
+      const result = await model.generateContentStream({ contents });
+
+      for await (const chunk of result.stream) {
+          const chunkText = chunk.text();
+          yield chunkText;
+      }
   }
 };

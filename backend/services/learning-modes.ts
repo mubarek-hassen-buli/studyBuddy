@@ -43,75 +43,97 @@ ${prompts[type] || prompts.short}
     return result.response.text();
   },
 
-  generateFlashcards: async (collectionName: string, count: number = 5) => {
-    // Query for key terms
-    const context = await ragService.retrieveContext(collectionName, "Important definitions terms concepts facts", 15, 0.5);
-    if (context.length === 0) return [];
+  generateFlashcards: async (
+    collectionName?: string | null,
+    topic?: string | null,
+    count: number = 5,
+    difficulty: "easy" | "medium" | "hard" = "medium"
+  ): Promise<Array<{ question: string; answer: string; difficulty?: string }>> => {
+    let contextText = "";
+    if (collectionName) {
+      try {
+        const query = topic ? `Important concepts and definitions about ${topic}` : "Important definitions terms concepts facts";
+        const context = await ragService.retrieveContext(collectionName, query, 15, 0.4);
+        if (context.length > 0) {
+          contextText = context.map((c) => c.content).join("\n\n");
+        }
+      } catch (err) {
+        console.warn("Vector search failed or collection empty, falling back to topic generation:", err);
+      }
+    }
 
-    const contextText = context.map(c => c.content).join("\n\n");
-    
-    const prompt = `
-You are a StudyBuddy AI assistant. Your task is to generate ${count} flashcards based ONLY on the provided context.
-
-STRICT RULES:
-1. Grounding: Every flashcard MUST be directly supported by the provided context.
-2. No Hallucinations: Do not invent names, thoughts, or facts not in the text.
-3. No Outside Knowledge: Do not use your general training data to add external information.
-4. Format: Return ONLY a valid JSON array of objects with "question" and "answer" fields.
-5. Content: If the context is insufficient or contains error messages, return an empty array [].
+    const prompt = contextText
+      ? `You are an academic flashcard creator. Generate exactly ${count} educational flashcards based ONLY on the provided context at a ${difficulty} difficulty level.
+Format: Return ONLY a valid JSON array of objects with keys: "question" (string) and "answer" (string).
 
 CONTEXT:
-${contextText}
-`;
+${contextText}`
+      : `You are an academic flashcard creator. Generate exactly ${count} high-yield educational flashcards for the topic "${topic || "General Academic Knowledge"}" at a ${difficulty} difficulty level.
+Format: Return ONLY a valid JSON array of objects with keys: "question" (string) and "answer" (string).`;
 
     const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json" }
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { responseMimeType: "application/json" },
     });
-    
+
     try {
-        return JSON.parse(result.response.text());
+      const parsed = JSON.parse(result.response.text());
+      return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
-        console.error("Failed to parse flashcards JSON", e);
-        return [];
+      console.error("Failed to parse flashcards JSON", e);
+      return [];
     }
   },
 
-  generateQuiz: async (collectionName: string, topic: string | undefined, count: number = 5) => {
-    const query = topic ? `Quiz questions about ${topic}` : "General quiz questions from material";
-    const context = await ragService.retrieveContext(collectionName, query, 15, 0.5);
-    
-    if (context.length === 0) return [];
-    
-    const contextText = context.map(c => c.content).join("\n\n");
+  generateQuiz: async (
+    collectionName?: string | null,
+    topic?: string | null,
+    count: number = 5,
+    difficulty: "easy" | "medium" | "hard" = "medium"
+  ): Promise<Array<{ question: string; options: string[]; answer: string; explanation?: string }>> => {
+    let contextText = "";
+    if (collectionName) {
+      try {
+        const query = topic ? `Quiz questions about ${topic}` : "General quiz questions from material";
+        const context = await ragService.retrieveContext(collectionName, query, 15, 0.4);
+        if (context.length > 0) {
+          contextText = context.map((c) => c.content).join("\n\n");
+        }
+      } catch (err) {
+        console.warn("Vector search failed or collection empty, falling back to topic quiz generation:", err);
+      }
+    }
 
-    const prompt = `
-You are a StudyBuddy AI assistant. Your task is to generate a quiz with ${count} multiple-choice questions based ONLY on the provided context.
-
+    const prompt = contextText
+      ? `You are a university professor creating an exam quiz. Generate ${count} multiple-choice questions based ONLY on the provided context at a ${difficulty} difficulty level.
 STRICT RULES:
-1. Grounding: Every question and answer choice MUST be derived from the provided context.
-2. No Hallucinations: Do not create fictitious scenarios or characters like "her thoughts" unless explicitly mentioned in the text.
-3. No Outside Knowledge: Use ONLY the information in the CONTEXT.
-4. Format: Return ONLY a valid JSON array of objects. Each object should have:
+1. Every question and answer MUST be supported by the provided context.
+2. Format: Return ONLY a valid JSON array of objects. Each object must have:
    - "question": string
-   - "options": array of 4 strings
-   - "answer": string (must be one of the options)
-5. Content: If the context is missing or irrelevant, return an empty array [].
+   - "options": array of 4 distinct strings
+   - "answer": string (must exactly match one of the options)
+   - "explanation": brief string explaining why the answer is correct
 
 CONTEXT:
-${contextText}
-`;
+${contextText}`
+      : `You are a university professor creating an exam quiz. Generate ${count} challenging multiple-choice questions about "${topic || "General Knowledge"}" at a ${difficulty} difficulty level.
+Format: Return ONLY a valid JSON array of objects. Each object must have:
+   - "question": string
+   - "options": array of 4 distinct strings
+   - "answer": string (must exactly match one of the options)
+   - "explanation": brief string explaining why the answer is correct`;
 
     const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json" }
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { responseMimeType: "application/json" },
     });
 
     try {
-        return JSON.parse(result.response.text());
+      const parsed = JSON.parse(result.response.text());
+      return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
-        console.error("Failed to parse quiz JSON", e);
-        return [];
+      console.error("Failed to parse quiz JSON", e);
+      return [];
     }
   }
 };

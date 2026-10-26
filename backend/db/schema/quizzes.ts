@@ -1,18 +1,26 @@
-import { pgTable, timestamp, uuid, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, jsonb, integer } from "drizzle-orm/pg-core";
 import { studyBuddies } from "./studybuddies";
-import { difficultyEnum } from "./flashcards"; // Reuse difficulty enum if possible, or redefine
-
-// Re-defining enum to avoid circular dependencies or import issues if in separate files without proper exports
-// Actually, let's just use the string values or import if strictly typed. 
-// For simplicity in schema definition file separation, I'll redefine or just use text with check constraint if Drizzle supports it easily, 
-// but PostgreSQL enums are global types. So if I defined 'difficulty' in flashcards.ts, it exists in the DB.
-// Drizzle requires importing the enum object to use it in another table definition.
-// So I will import it.
+import { users } from "./users";
+import { difficultyEnum } from "./flashcards";
 
 export const quizzes = pgTable("quizzes", {
   id: uuid("id").defaultRandom().primaryKey(),
   studyBuddyId: uuid("study_buddy_id").notNull().references(() => studyBuddies.id, { onDelete: "cascade" }),
+  title: text("title"),
+  topic: text("topic"),
   questions: jsonb("questions").notNull(),
   difficulty: difficultyEnum("difficulty").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const quizAttempts = pgTable("quiz_attempts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  quizId: uuid("quiz_id").notNull().references(() => quizzes.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  score: integer("score").notNull(),
+  totalQuestions: integer("total_questions").notNull(),
+  percentage: integer("percentage").notNull(),
+  answers: jsonb("answers"),
+  completedAt: timestamp("completed_at").defaultNow().notNull(),
+});
+
