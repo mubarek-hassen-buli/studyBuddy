@@ -82,7 +82,7 @@ export function useFlashcardDecks() {
 
   // 4. Create Flashcard Deck Mutation
   const createDeckMutation = useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       topic,
       count = 5,
       studyBuddyId,
@@ -90,9 +90,13 @@ export function useFlashcardDecks() {
       topic: string;
       count?: number;
       studyBuddyId?: string | null;
-    }) => api.post("/learning/flashcards/create", { topic, count, studyBuddyId }),
-    onSuccess: () => {
-      toast.success("Flashcards generated successfully!");
+    }) => {
+      const res = await api.post("/learning/flashcards/create", { topic, count, studyBuddyId });
+      return res as { flashcards: any[]; deckId: string; count: number };
+    },
+    onSuccess: (data) => {
+      const count = data?.count || data?.flashcards?.length || 0;
+      toast.success(`Generated ${count} flashcard${count === 1 ? "" : "s"} successfully!`);
       queryClient.invalidateQueries({ queryKey: ["flashcards", "decks"] });
       queryClient.invalidateQueries({ queryKey: ["flashcards", "overview"] });
       queryClient.invalidateQueries({ queryKey: ["buddies"] });

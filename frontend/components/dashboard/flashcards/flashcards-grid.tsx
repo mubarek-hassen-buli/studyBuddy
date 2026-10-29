@@ -16,18 +16,40 @@ import { FlashcardsStudyModal } from "./flashcards-study-modal";
 
 interface FlashcardsGridProps {
   onCreateDeckClick: () => void;
+  externalActiveDeck?: FlashcardDeck | null;
+  onClearExternalActiveDeck?: () => void;
 }
 
-export function FlashcardsGrid({ onCreateDeckClick }: FlashcardsGridProps) {
+export function FlashcardsGrid({
+  onCreateDeckClick,
+  externalActiveDeck,
+  onClearExternalActiveDeck,
+}: FlashcardsGridProps) {
   const [activeTab, setActiveTab] = React.useState<"all" | "due" | "mastered">("all");
   const [sortBy, setSortBy] = React.useState<"recent" | "cards" | "name">("recent");
   const [sortDropdownOpen, setSortDropdownOpen] = React.useState(false);
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
 
-  // Active study session deck
+  // Active study session deck & mode
   const [activeStudyDeck, setActiveStudyDeck] = React.useState<FlashcardDeck | null>(null);
+  const [initialStudyMode, setInitialStudyMode] = React.useState<"study" | "list">("study");
 
   const { decks, isLoading } = useFlashcardDecks();
+
+  // If an external active deck was passed (e.g. freshly created deck), open it
+  React.useEffect(() => {
+    if (externalActiveDeck) {
+      setActiveStudyDeck(externalActiveDeck);
+      setInitialStudyMode("study");
+    }
+  }, [externalActiveDeck]);
+
+  const handleCloseModal = () => {
+    setActiveStudyDeck(null);
+    if (onClearExternalActiveDeck) {
+      onClearExternalActiveDeck();
+    }
+  };
 
   // Filter and sort decks
   const filteredDecks = React.useMemo(() => {
@@ -171,7 +193,7 @@ export function FlashcardsGrid({ onCreateDeckClick }: FlashcardsGridProps) {
         {filteredDecks.map((deck) => (
           <div
             key={deck.id}
-            className="group relative rounded-2xl bg-white p-4 shadow-2xs hover:shadow-md transition-all border border-[#E5EAE7] flex flex-col justify-between min-h-[145px]"
+            className="group relative rounded-2xl bg-white p-4 shadow-2xs hover:shadow-md transition-all border border-[#E5EAE7] flex flex-col justify-between min-h-[155px]"
           >
             {/* Top Row: Icon + Title/Cards + Menu */}
             <div className="flex items-start justify-between gap-3">
@@ -206,19 +228,36 @@ export function FlashcardsGrid({ onCreateDeckClick }: FlashcardsGridProps) {
               </div>
             </div>
 
-            {/* Bottom Row: Study Button */}
-            <div className="pt-1 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setActiveStudyDeck(deck)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#E8F2EC] hover:bg-[#D7EAE0] text-[#0D382B] text-xs font-bold transition-colors active:scale-95"
-              >
-                <Play className="w-3 h-3 fill-current" />
-                <span>Practice</span>
-              </button>
+            {/* Bottom Row: Study & View All Cards Buttons */}
+            <div className="pt-1 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInitialStudyMode("study");
+                    setActiveStudyDeck(deck);
+                  }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#E8F2EC] hover:bg-[#D7EAE0] text-[#0D382B] text-xs font-bold transition-colors active:scale-95"
+                >
+                  <Play className="w-3 h-3 fill-current" />
+                  <span>Practice</span>
+                </button>
 
-              <span className="text-[10px] text-slate-400 font-medium">
-                {deck.masteredCount} mastered
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInitialStudyMode("list");
+                    setActiveStudyDeck(deck);
+                  }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-colors"
+                >
+                  <BookOpen className="w-3 h-3" />
+                  <span>All Cards</span>
+                </button>
+              </div>
+
+              <span className="text-[10px] text-slate-400 font-medium shrink-0">
+                {deck.totalCards} cards
               </span>
             </div>
           </div>
@@ -227,7 +266,7 @@ export function FlashcardsGrid({ onCreateDeckClick }: FlashcardsGridProps) {
         {/* Create New Deck Slot */}
         <div
           onClick={onCreateDeckClick}
-          className="group relative rounded-2xl bg-white p-4 shadow-2xs hover:shadow-md transition-all border border-dashed border-slate-300 hover:border-[#0D382B] flex flex-col items-center justify-center text-center cursor-pointer min-h-[145px]"
+          className="group relative rounded-2xl bg-white p-4 shadow-2xs hover:shadow-md transition-all border border-dashed border-slate-300 hover:border-[#0D382B] flex flex-col items-center justify-center text-center cursor-pointer min-h-[155px]"
         >
           <div className="h-10 w-10 rounded-full bg-[#E8F2EC] text-[#0D382B] group-hover:bg-[#0D382B] group-hover:text-white flex items-center justify-center mb-2 transition-colors">
             <Plus className="w-5 h-5" />
@@ -236,7 +275,7 @@ export function FlashcardsGrid({ onCreateDeckClick }: FlashcardsGridProps) {
             Create New Deck
           </h4>
           <p className="text-[10px] text-slate-400 font-medium mt-0.5 mb-2.5">
-            Generate cards from notes or subject
+            Generate 5, 10, 15, or 20 cards
           </p>
           <button
             type="button"
@@ -264,7 +303,7 @@ export function FlashcardsGrid({ onCreateDeckClick }: FlashcardsGridProps) {
             No flashcard decks created yet
           </h3>
           <p className="text-xs text-slate-500 font-medium max-w-sm mt-1 mb-4">
-            Click &apos;Create New Deck&apos; or upload materials to start practicing with spaced repetition.
+            Click &apos;Create New Deck&apos; to generate your first set of flashcards.
           </p>
           <button
             type="button"
@@ -281,7 +320,8 @@ export function FlashcardsGrid({ onCreateDeckClick }: FlashcardsGridProps) {
       <FlashcardsStudyModal
         deck={activeStudyDeck}
         isOpen={!!activeStudyDeck}
-        onClose={() => setActiveStudyDeck(null)}
+        onClose={handleCloseModal}
+        initialMode={initialStudyMode}
       />
     </div>
   );

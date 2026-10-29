@@ -15,12 +15,13 @@ import { useBuddies, StudyBuddy } from "@/hooks/use-buddies";
 interface CreateDeckModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onDeckCreated?: (deck: { id: string; studyBuddyId: string; title: string; totalCards: number }) => void;
 }
 
-export function CreateDeckModal({ isOpen, onClose }: CreateDeckModalProps) {
+export function CreateDeckModal({ isOpen, onClose, onDeckCreated }: CreateDeckModalProps) {
   const [topic, setTopic] = React.useState("");
   const [selectedBuddyId, setSelectedBuddyId] = React.useState<string>("");
-  const [cardCount, setCardCount] = React.useState<number>(5);
+  const [cardCount, setCardCount] = React.useState<number>(10);
 
   const { createDeck, isCreatingDeck } = useFlashcardDecks();
   const { buddies } = useBuddies();
@@ -30,13 +31,29 @@ export function CreateDeckModal({ isOpen, onClose }: CreateDeckModalProps) {
     if (!topic.trim()) return;
 
     try {
-      await createDeck({
+      const res = await createDeck({
         topic: topic.trim(),
         count: cardCount,
         studyBuddyId: selectedBuddyId ? selectedBuddyId : undefined,
       });
+
+      const buddyName = selectedBuddyId
+        ? buddies.find((b: StudyBuddy) => b.id === selectedBuddyId)?.name || topic.trim()
+        : topic.trim();
+
+      const createdDeck = {
+        id: res.deckId || selectedBuddyId || "deck",
+        studyBuddyId: res.deckId || selectedBuddyId || "deck",
+        title: buddyName,
+        totalCards: res.count || cardCount,
+      };
+
       setTopic("");
       onClose();
+
+      if (onDeckCreated) {
+        onDeckCreated(createdDeck);
+      }
     } catch {
       // toast already handled in mutation
     }
@@ -53,7 +70,7 @@ export function CreateDeckModal({ isOpen, onClose }: CreateDeckModalProps) {
             Generate Flashcard Deck
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500 font-medium">
-            Enter a subject or concept. Folio AI will craft rigorous, high-yield study cards for you.
+            Enter a subject or concept. Folio AI will craft high-yield study cards for you.
           </DialogDescription>
         </DialogHeader>
 
@@ -68,7 +85,7 @@ export function CreateDeckModal({ isOpen, onClose }: CreateDeckModalProps) {
               required
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g. Organic Chemistry, Greek Philosophy, React 19"
+              placeholder="e.g. Organic Chemistry, Cell Biology, Microeconomics"
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0D382B] focus:border-transparent transition-all"
             />
           </div>
@@ -77,14 +94,14 @@ export function CreateDeckModal({ isOpen, onClose }: CreateDeckModalProps) {
           {buddies && buddies.length > 0 && (
             <div>
               <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                Link to Companion (Optional)
+                Link to Course Material (Optional)
               </label>
               <select
                 value={selectedBuddyId}
                 onChange={(e) => setSelectedBuddyId(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#0D382B] focus:border-transparent transition-all"
               >
-                <option value="">General (New Deck)</option>
+                <option value="">General Deck (Create New Subject)</option>
                 {buddies.map((b: StudyBuddy) => (
                   <option key={b.id} value={b.id}>
                     {b.name} {b.subject ? `(${b.subject})` : ""}
@@ -94,20 +111,20 @@ export function CreateDeckModal({ isOpen, onClose }: CreateDeckModalProps) {
             </div>
           )}
 
-          {/* Card Count Selector */}
+          {/* Card Count Selector (5, 10, 15, 20) */}
           <div>
             <label className="block text-xs font-bold text-slate-800 mb-1.5">
-              Number of Flashcards
+              Number of Flashcards to Generate
             </label>
-            <div className="grid grid-cols-3 gap-2">
-              {[5, 10, 15].map((cnt) => (
+            <div className="grid grid-cols-4 gap-2">
+              {[5, 10, 15, 20].map((cnt) => (
                 <button
                   key={cnt}
                   type="button"
                   onClick={() => setCardCount(cnt)}
                   className={`py-2 rounded-xl text-xs font-bold border transition-all ${
                     cardCount === cnt
-                      ? "bg-[#0D382B] text-white border-[#0D382B]"
+                      ? "bg-[#0D382B] text-white border-[#0D382B] shadow-2xs"
                       : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
                   }`}
                 >
@@ -135,12 +152,12 @@ export function CreateDeckModal({ isOpen, onClose }: CreateDeckModalProps) {
               {isCreatingDeck ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Generating Deck...</span>
+                  <span>Generating {cardCount} Cards...</span>
                 </>
               ) : (
                 <>
                   <Layers className="w-4 h-4" />
-                  <span>Create Deck</span>
+                  <span>Create {cardCount} Cards</span>
                 </>
               )}
             </button>

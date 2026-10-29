@@ -57,7 +57,7 @@ export const processDocument = async (documentId: string, fileBuffer: Buffer, fi
     console.log(`Generating embeddings for ${textChunks.length} chunks in parallel...`);
     
     // Generate all embeddings concurrently
-    const embeddings = await Promise.all(textChunks.map(chunk => embeddingService.embedText(chunk)));
+    const embeddings = await embeddingService.embedBatch(textChunks);
 
     const chunkRecords = [];
     const points = [];

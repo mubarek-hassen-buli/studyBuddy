@@ -77,8 +77,10 @@ Format: Return ONLY a valid JSON array of objects with keys: "question" (string)
     });
 
     try {
-      const parsed = JSON.parse(result.response.text());
-      return Array.isArray(parsed) ? parsed : [];
+      const rawText = result.response.text();
+      const parsed = JSON.parse(rawText);
+      const list = Array.isArray(parsed) ? parsed : (parsed?.flashcards || parsed?.cards || parsed?.items || []);
+      return Array.isArray(list) ? list : [];
     } catch (e) {
       console.error("Failed to parse flashcards JSON", e);
       return [];

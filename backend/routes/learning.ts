@@ -217,25 +217,17 @@ export const learningRoutes = new Elysia({ prefix: "/api/learning" })
     }
 
     if (!buddyId) {
-      // Find or create default study companion
-      const firstBuddy = await db.query.studyBuddies.findFirst({
-        where: eq(studyBuddies.userId, user!.id),
-      });
-      if (firstBuddy) {
-        buddyId = firstBuddy.id;
-        collectionName = firstBuddy.qdrantCollectionName;
-      } else {
-        const [newBuddy] = await db
-          .insert(studyBuddies)
-          .values({
-            userId: user!.id,
-            name: topic || "General Studies",
-            subject: topic || "Academics",
-            description: "Study deck companion",
-          })
-          .returning();
-        buddyId = newBuddy.id;
-      }
+      // Create a dedicated deck / study companion for this specific topic
+      const [newBuddy] = await db
+        .insert(studyBuddies)
+        .values({
+          userId: user!.id,
+          name: topic || "General Studies",
+          subject: topic || "Academics",
+          description: `Study deck for ${topic || "General Studies"}`,
+        })
+        .returning();
+      buddyId = newBuddy.id;
     }
 
     try {
@@ -259,7 +251,7 @@ export const learningRoutes = new Elysia({ prefix: "/api/learning" })
       }));
 
       const inserted = await db.insert(flashcards).values(values).returning();
-      return { flashcards: inserted };
+      return { flashcards: inserted, deckId: buddyId, count: inserted.length };
     } catch (error) {
       console.error("Flashcards create error:", error);
       set.status = 500;
