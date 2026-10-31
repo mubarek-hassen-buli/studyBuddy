@@ -7,10 +7,6 @@ import {
   Layers,
   Brain,
   MessageSquare,
-  Calendar,
-  Folder,
-  FolderArchive,
-  Archive,
   Plus,
   Settings,
   LogOut,
@@ -56,12 +52,6 @@ export function AppSidebar() {
     { name: "AI Chat", icon: MessageSquare, href: "/dashboard/chat" },
   ];
 
-  const libraryNavItems = [
-    { name: "All Documents", icon: Folder, href: "/dashboard/documents" },
-    { name: "Collections", icon: FolderArchive, href: "/dashboard/documents" },
-    { name: "Archived", icon: Archive, href: "/dashboard/documents" },
-  ];
-
   const userName = user?.name || "Mubarek Hassen";
   const userEmail = user?.email || "mubid@gmail.com";
   const userInitial = userName.charAt(0).toUpperCase();
@@ -94,7 +84,7 @@ export function AppSidebar() {
           <div className="pt-1">
             <button
               onClick={() => setScheduleModalOpen(true)}
-              className="w-full bg-[#0D382B] hover:bg-[#07251C] text-white transition-all duration-200 shadow-sm rounded-2xl py-2.5 px-4 font-semibold text-xs flex items-center justify-center gap-2 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center active:scale-98"
+              className="w-full bg-[#0D382B] hover:bg-[#07251C] text-white transition-all duration-200 shadow-sm rounded-2xl py-2.5 px-4 font-semibold text-xs flex items-center justify-center gap-2 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center active:scale-98 cursor-pointer"
             >
               <Plus className="h-4 w-4 shrink-0" />
               <span className="group-data-[collapsible=icon]:hidden">New Study Session</span>
@@ -116,7 +106,7 @@ export function AppSidebar() {
                         asChild
                         tooltip={item.name}
                         isActive={isActive}
-                        className={`w-full py-2 px-3 transition-all rounded-xl text-xs ${
+                        className={`w-full py-2 px-3 transition-all rounded-xl text-xs cursor-pointer ${
                           isActive
                             ? "bg-[#E8F2EC] text-[#0D382B] font-bold hover:bg-[#E8F2EC] hover:text-[#0D382B]"
                             : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 font-medium"
@@ -131,38 +121,6 @@ export function AppSidebar() {
                               isActive ? "text-[#0D382B]" : "text-slate-500"
                             }`}
                           />
-                          <span className="truncate group-data-[collapsible=icon]:hidden">
-                            {item.name}
-                          </span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          {/* Section: LIBRARY */}
-          <SidebarGroup className="p-0">
-            <SidebarGroupLabel className="text-[10px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1 group-data-[collapsible=icon]:hidden">
-              Library
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu className="gap-0.5">
-                {libraryNavItems.map((item) => {
-                  return (
-                    <SidebarMenuItem key={item.name}>
-                      <SidebarMenuButton
-                        asChild
-                        tooltip={item.name}
-                        className="w-full py-2 px-3 transition-all rounded-xl text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100/60 font-medium"
-                      >
-                        <Link
-                          href={item.href}
-                          className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center"
-                        >
-                          <item.icon className="h-4 w-4 shrink-0 text-slate-500" />
                           <span className="truncate group-data-[collapsible=icon]:hidden">
                             {item.name}
                           </span>
@@ -210,7 +168,7 @@ export function AppSidebar() {
                 </span>
                 <button
                   onClick={() => router.push("/dashboard")}
-                  className="h-5 w-5 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition-colors"
+                  className="h-5 w-5 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition-colors cursor-pointer"
                 >
                   <ArrowRight className="w-3 h-3" />
                 </button>
@@ -247,7 +205,7 @@ export function AppSidebar() {
 
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 text-xs font-medium transition-colors group-data-[collapsible=icon]:justify-center"
+              className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 text-xs font-medium transition-colors group-data-[collapsible=icon]:justify-center cursor-pointer"
             >
               <LogOut className="w-4 h-4 text-slate-400 shrink-0" />
               <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>

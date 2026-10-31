@@ -21,7 +21,6 @@ export default function DocumentsPage() {
       {/* 1. Page Hero with Titles, Stat Pills, Top Action Buttons, and Folio Character */}
       <MaterialsHero
         onUploadClick={() => setUploadModalOpen(true)}
-        onCreateCollectionClick={() => setCreateModalOpen(true)}
       />
 
       {/* 2. Main Layout Grid: Materials Grid (Left 8.5 cols) + Sidebar (Right 3.5 cols) */}
@@ -43,7 +42,7 @@ export default function DocumentsPage() {
               Upload Material
             </DialogTitle>
             <DialogDescription className="text-center text-xs text-slate-500 font-medium">
-              Upload PDF, DOCX, TXT, or notes to generate study flashcards and quizzes.
+              Upload PDF, DOCX, PPTX, or TXT notes to generate study flashcards and quizzes.
             </DialogDescription>
           </DialogHeader>
 
@@ -53,16 +52,16 @@ export default function DocumentsPage() {
             ) : (
               <div className="text-center py-6">
                 <p className="text-xs text-slate-600 mb-3">
-                  Please create a StudyBuddy or collection first to organize your materials.
+                  Please create a study workspace first to organize your materials.
                 </p>
                 <button
                   onClick={() => {
                     setUploadModalOpen(false);
                     setCreateModalOpen(true);
                   }}
-                  className="rounded-full bg-[#0D382B] text-white text-xs font-bold px-5 py-2.5 shadow-sm"
+                  className="rounded-full bg-[#0D382B] text-white text-xs font-bold px-5 py-2.5 shadow-sm cursor-pointer hover:bg-[#07251C] transition-all"
                 >
-                  Create StudyBuddy First
+                  Create Study Workspace
                 </button>
               </div>
             )}
