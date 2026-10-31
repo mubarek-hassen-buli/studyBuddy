@@ -5,9 +5,9 @@ import { useAuthStore } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { Search, Bell, MessageSquare, Sparkles } from "lucide-react";
-import { CreateBuddyDialog } from "@/components/dashboard/create-buddy-dialog";
+import { Search } from "lucide-react";
 import { MiniTimerPill } from "@/components/dashboard/mini-timer-pill";
+import { NotificationBell } from "@/components/dashboard/notification-bell";
 
 export default function DashboardLayout({
   children,
@@ -69,15 +69,8 @@ export default function DashboardLayout({
             <div className="flex items-center gap-3 sm:gap-4">
               <MiniTimerPill />
 
-              {/* Notification Bell with Red Dot */}
-              <button
-                type="button"
-                className="relative h-9 w-9 rounded-full hover:bg-slate-200/50 flex items-center justify-center text-slate-600 transition-colors"
-                title="Notifications"
-              >
-                <Bell className="w-4 h-4" />
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 border-2 border-white" />
-              </button>
+              {/* Interactive Notification Bell with Popover */}
+              <NotificationBell />
 
               {/* User Profile Capsule */}
               <div className="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-[#E5EAE7]">
@@ -98,13 +91,10 @@ export default function DashboardLayout({
         </header>
 
         {/* Scrollable Dashboard Body */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-            {children}
-          </div>
-        </div>
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-6">
+          {children}
+        </main>
       </SidebarInset>
-      <CreateBuddyDialog />
     </SidebarProvider>
   );
 }

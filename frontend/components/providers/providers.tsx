@@ -1,11 +1,12 @@
 "use client";
 
 import { QueryProvider } from "./query-provider";
+import { AccentProvider } from "./accent-provider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryProvider>
-      {children}
+      <AccentProvider>{children}</AccentProvider>
     </QueryProvider>
   );
 }

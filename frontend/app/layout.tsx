@@ -45,6 +45,20 @@ export default function RootLayout({
       className={`${plusJakarta.variable} ${newsreader.variable} ${caveat.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('folio-accent-color') || 'forest';
+                  document.documentElement.setAttribute('data-accent', saved);
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="font-sans antialiased bg-[#F8FAF6] text-slate-800 selection:bg-emerald-100 selection:text-[#0D382B]">
         <Providers>
           {children}

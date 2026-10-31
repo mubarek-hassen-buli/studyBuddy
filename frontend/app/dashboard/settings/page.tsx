@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 import { authClient } from "@/lib/auth-client";
+import { useAccentStore, ACCENT_THEMES } from "@/store/accent-store";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -49,18 +50,9 @@ const navTabs: NavTabItem[] = [
   { id: "privacy", label: "Privacy & Security", icon: ShieldCheck },
 ];
 
-// Accent Color swatches
-const accentColors = [
-  { id: "forest", bg: "#0D382B", label: "Folio Forest" },
-  { id: "teal", bg: "#144A3C", label: "Deep Teal" },
-  { id: "emerald", bg: "#10B981", label: "Emerald" },
-  { id: "amber", bg: "#F59E0B", label: "Amber" },
-  { id: "purple", bg: "#8B5CF6", label: "Lavender" },
-  { id: "sky", bg: "#38BDF8", label: "Sky Blue" },
-];
-
 export default function SettingsPage() {
   const { user, checkSession } = useAuthStore();
+  const { accent: selectedAccent, setAccent } = useAccentStore();
 
   // Active Tab
   const [activeTab, setActiveTab] = React.useState<SettingsTabId>("account");
@@ -84,8 +76,30 @@ export default function SettingsPage() {
 
   // Appearance State
   const [theme, setTheme] = React.useState<"light" | "dark" | "auto">("auto");
-  const [selectedAccent, setSelectedAccent] = React.useState("forest");
-  const [fontSize, setFontSize] = React.useState<"small" | "normal" | "large">("normal");
+
+  React.useEffect(() => {
+    try {
+      const savedTheme = localStorage.getItem("folio-theme") as "light" | "dark" | "auto" | null;
+      if (savedTheme) {
+        setTheme(savedTheme);
+      }
+    } catch {}
+  }, []);
+
+  const handleThemeChange = (newTheme: "light" | "dark" | "auto") => {
+    setTheme(newTheme);
+    try {
+      localStorage.setItem("folio-theme", newTheme);
+      if (newTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else if (newTheme === "light") {
+        document.documentElement.classList.remove("dark");
+      } else {
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.classList.toggle("dark", prefersDark);
+      }
+    } catch {}
+  };
 
   // Notifications Toggle State
   const [notifications, setNotifications] = React.useState({
@@ -95,15 +109,45 @@ export default function SettingsPage() {
     newFeatures: true,
   });
 
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem("folio-notifications");
+      if (saved) {
+        setNotifications(JSON.parse(saved));
+      }
+    } catch {}
+  }, []);
+
+  const handleSaveNotifications = async () => {
+    try {
+      localStorage.setItem("folio-notifications", JSON.stringify(notifications));
+      window.dispatchEvent(
+        new CustomEvent("folio-notifications-changed", { detail: notifications })
+      );
+
+      // Request browser notification permission if available and not denied
+      if (typeof window !== "undefined" && "Notification" in window) {
+        if (Notification.permission === "default") {
+          await Notification.requestPermission();
+        }
+      }
+      toast.success("Notification preferences saved successfully!");
+    } catch {
+      toast.error("Failed to save notification preferences.");
+    }
+  };
+
   // Modal dialog states
   const [passwordModalOpen, setPasswordModalOpen] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [photoModalOpen, setPhotoModalOpen] = React.useState(false);
 
-  // Password fields
+  // Password fields & status
   const [currentPassword, setCurrentPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
+  const [isChangingPassword, setIsChangingPassword] = React.useState(false);
 
   // References for scrolling
   const appearanceRef = React.useRef<HTMLDivElement>(null);
@@ -132,6 +176,54 @@ export default function SettingsPage() {
       toast.error("Failed to update profile. Please try again.");
     } finally {
       setIsSavingProfile(false);
+    }
+  };
+
+  // Real Password Change Handler
+  const handleChangePassword = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
+    if (!currentPassword) {
+      toast.error("Please enter your current password.");
+      return;
+    }
+    if (!newPassword || newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters long.");
+      return;
+    }
+    if (confirmPassword && newPassword !== confirmPassword) {
+      toast.error("New passwords do not match.");
+      return;
+    }
+    if (currentPassword === newPassword) {
+      toast.error("New password must be different from current password.");
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const res = await authClient.changePassword({
+        newPassword,
+        currentPassword,
+        revokeOtherSessions: true,
+      });
+
+      if (res?.error) {
+        toast.error(
+          res.error.message || "Failed to update password. Please check your current password."
+        );
+      } else {
+        toast.success("Password updated successfully!");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setPasswordModalOpen(false);
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to update password.";
+      toast.error(message);
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -414,9 +506,9 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* ROW 2: 3 CARDS (Appearance, Notifications, Folio Promo) */}
+          {/* ROW 2: 3 CARDS (Appearance, Notifications, Folio Showcase) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
-            {/* CARD 1: Appearance */}
+            {/* CARD 1: Appearance (Theme & Global Accent Color) */}
             <div
               ref={appearanceRef}
               className="bg-white rounded-2xl border border-[#E5EAE7] p-5 shadow-2xs flex flex-col justify-between space-y-4"
@@ -431,10 +523,10 @@ export default function SettingsPage() {
                   </h4>
                 </div>
                 <p className="text-xs text-slate-400 font-medium pl-8">
-                  Customize the look and feel of Folio.
+                  Customize the look and feel of Folio across all pages.
                 </p>
 
-                <div className="space-y-3.5 pt-3">
+                <div className="space-y-4 pt-3">
                   {/* Theme Switcher */}
                   <div>
                     <label className="text-[11px] font-bold text-slate-500 mb-1.5 block">
@@ -445,7 +537,7 @@ export default function SettingsPage() {
                         <button
                           key={t}
                           type="button"
-                          onClick={() => setTheme(t)}
+                          onClick={() => handleThemeChange(t)}
                           className={`flex-1 py-1 rounded-full transition-all capitalize cursor-pointer ${
                             theme === t
                               ? "bg-[#0D382B] text-white font-bold shadow-2xs"
@@ -458,24 +550,32 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  {/* Accent Color */}
+                  {/* Accent Color Selection (Global Across App) */}
                   <div>
-                    <label className="text-[11px] font-bold text-slate-500 mb-1.5 block">
-                      Accent Color
-                    </label>
-                    <div className="flex items-center gap-2 pt-0.5">
-                      {accentColors.map((color) => {
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-[11px] font-bold text-slate-500">
+                        Accent Color
+                      </label>
+                      <span className="text-[10px] font-semibold text-slate-400 capitalize">
+                        {ACCENT_THEMES.find((c) => c.id === selectedAccent)?.label || "Folio Forest"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-1.5 pt-0.5">
+                      {ACCENT_THEMES.map((color) => {
                         const isSelected = selectedAccent === color.id;
                         return (
                           <button
                             key={color.id}
                             type="button"
-                            onClick={() => setSelectedAccent(color.id)}
+                            onClick={() => {
+                              setAccent(color.id);
+                              toast.success(`Accent color updated to ${color.label}!`);
+                            }}
                             style={{ backgroundColor: color.bg }}
                             title={color.label}
-                            className={`w-6 h-6 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
                               isSelected
-                                ? "ring-2 ring-offset-2 ring-[#0D382B] scale-110"
+                                ? "ring-2 ring-offset-2 ring-[#0D382B] scale-110 shadow-xs"
                                 : "hover:scale-105 opacity-90"
                             }`}
                           >
@@ -485,55 +585,15 @@ export default function SettingsPage() {
                       })}
                     </div>
                   </div>
-
-                  {/* Font Size */}
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-500 mb-1.5 block">
-                      Font Size
-                    </label>
-                    <div className="bg-slate-100 p-0.5 rounded-full flex text-xs font-semibold">
-                      <button
-                        type="button"
-                        onClick={() => setFontSize("small")}
-                        className={`flex-1 py-1 rounded-full transition-all text-center cursor-pointer ${
-                          fontSize === "small"
-                            ? "bg-[#0D382B] text-white font-bold shadow-2xs"
-                            : "text-slate-600 hover:text-slate-900"
-                        }`}
-                      >
-                        A
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFontSize("normal")}
-                        className={`flex-1 py-1 rounded-full transition-all text-center cursor-pointer ${
-                          fontSize === "normal"
-                            ? "bg-[#0D382B] text-white font-bold shadow-2xs"
-                            : "text-slate-600 hover:text-slate-900"
-                        }`}
-                      >
-                        Normal
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFontSize("large")}
-                        className={`flex-1 py-1 rounded-full transition-all text-center font-bold cursor-pointer ${
-                          fontSize === "large"
-                            ? "bg-[#0D382B] text-white font-bold shadow-2xs"
-                            : "text-slate-600 hover:text-slate-900"
-                        }`}
-                      >
-                        A
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
 
               {/* Bottom Action: Update Appearance */}
               <button
                 type="button"
-                onClick={() => toast.success("Appearance settings updated!")}
+                onClick={() => {
+                  toast.success("Appearance settings updated!");
+                }}
                 className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#0D382B] hover:bg-[#07251C] text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer mt-2"
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -694,7 +754,7 @@ export default function SettingsPage() {
               {/* Bottom Action: Save Preferences */}
               <button
                 type="button"
-                onClick={() => toast.success("Notification preferences saved!")}
+                onClick={handleSaveNotifications}
                 className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#0D382B] hover:bg-[#07251C] text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer mt-2"
               >
                 <Check className="w-3.5 h-3.5" />
@@ -763,7 +823,7 @@ export default function SettingsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3.5 py-2">
+          <form onSubmit={handleChangePassword} className="space-y-3.5 py-2">
             <div>
               <label className="text-xs font-bold text-slate-700 mb-1 block">
                 Current Password
@@ -773,7 +833,8 @@ export default function SettingsPage() {
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D382B]"
+                required
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D382B] transition-all"
               />
             </div>
 
@@ -786,7 +847,22 @@ export default function SettingsPage() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D382B]"
+                required
+                minLength={8}
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D382B] transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 mb-1 block">
+                Confirm New Password
+              </label>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D382B] transition-all"
               />
             </div>
 
@@ -800,33 +876,32 @@ export default function SettingsPage() {
                 <span>{showPassword ? "Hide" : "Show"} password</span>
               </button>
             </div>
-          </div>
 
-          <DialogFooter className="flex sm:justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => setPasswordModalOpen(false)}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (!newPassword || newPassword.length < 8) {
-                  toast.error("New password must be at least 8 characters.");
-                  return;
-                }
-                toast.success("Password updated successfully!");
-                setCurrentPassword("");
-                setNewPassword("");
-                setPasswordModalOpen(false);
-              }}
-              className="px-4 py-2 rounded-xl bg-[#0D382B] text-white text-xs font-bold hover:bg-[#07251C] cursor-pointer"
-            >
-              Update Password
-            </button>
-          </DialogFooter>
+            <DialogFooter className="flex sm:justify-end gap-2 pt-2">
+              <button
+                type="button"
+                disabled={isChangingPassword}
+                onClick={() => setPasswordModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isChangingPassword}
+                className="px-4 py-2 rounded-xl bg-[#0D382B] text-white text-xs font-bold hover:bg-[#07251C] transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
+              >
+                {isChangingPassword ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Updating...</span>
+                  </>
+                ) : (
+                  <span>Update Password</span>
+                )}
+              </button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
