@@ -5,6 +5,8 @@ interface User {
   id: string;
   email: string;
   name: string;
+  role?: "user" | "super_admin";
+  tier?: string;
   image?: string | null;
   emailVerified: boolean;
   createdAt: Date;

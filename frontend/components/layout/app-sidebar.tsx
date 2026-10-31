@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ArrowRight,
   BookOpen,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,6 +28,7 @@ import {
   SidebarGroupContent,
 } from "@/components/ui/sidebar";
 import { useAuthStore } from "@/store/auth-store";
+import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -35,6 +37,7 @@ import { ScheduleSessionDialog } from "@/components/dashboard/schedule-session-d
 
 export function AppSidebar() {
   const { user } = useAuthStore();
+  const { isSuperAdmin } = useAdminAuth();
   const pathname = usePathname();
   const router = useRouter();
   const [scheduleModalOpen, setScheduleModalOpen] = React.useState(false);
@@ -179,6 +182,19 @@ export function AppSidebar() {
 
         {/* User Profile Footer */}
         <SidebarFooter className="p-3 border-t border-[#E5EAE7] bg-[#F8FAF6]">
+          {/* Super Admin Portal Entry (visible for Super Admins) */}
+          {isSuperAdmin && (
+            <div className="mb-2">
+              <Link
+                href="/admin"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-emerald-900 bg-emerald-100/90 hover:bg-emerald-100 text-xs font-bold transition-all border border-emerald-300 shadow-2xs group-data-[collapsible=icon]:justify-center"
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
+                <span className="group-data-[collapsible=icon]:hidden">Super Admin Portal</span>
+              </Link>
+            </div>
+          )}
+
           {/* User Profile Row */}
           <div className="flex items-center justify-between px-2 py-1.5 rounded-xl hover:bg-slate-100/60 transition-colors group-data-[collapsible=icon]:justify-center">
             <div className="flex items-center gap-2.5 overflow-hidden">
