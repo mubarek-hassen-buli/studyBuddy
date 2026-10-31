@@ -11,6 +11,7 @@ import { documentRoutes } from "./routes/documents";
 import { chatRoutes } from "./routes/chat";
 import { learningRoutes } from "./routes/learning";
 import { sessionsRoutes } from "./routes/sessions";
+import { adminRoutes } from "./routes/admin";
 
 const app = new Elysia({ adapter: node() })
   .use(cors({
@@ -29,6 +30,7 @@ const app = new Elysia({ adapter: node() })
   .use(chatRoutes)
   .use(learningRoutes)
   .use(sessionsRoutes)
+  .use(adminRoutes)
   .get("/", () => "Hello from StudyBuddy API")
   .listen(process.env.PORT || 3001);
 
@@ -37,4 +39,3 @@ console.log(
 );
 
 export default app;
-  

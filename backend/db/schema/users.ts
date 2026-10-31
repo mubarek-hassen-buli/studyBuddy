@@ -1,11 +1,17 @@
 import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
 
+export type UserRole = "user" | "super_admin";
+
 export const users = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("emailVerified").notNull(),
   tier: text("tier").default("free").notNull(),
+  role: text("role").$type<UserRole>().default("user").notNull(),
+  banned: boolean("banned").default(false).notNull(),
+  banReason: text("banReason"),
+  banExpires: timestamp("banExpires"),
   image: text("image"),
   createdAt: timestamp("createdAt").notNull(),
   updatedAt: timestamp("updatedAt").notNull(),

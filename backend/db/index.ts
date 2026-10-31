@@ -1,8 +1,12 @@
 import * as dns from "dns";
 dns.setDefaultResultOrder("ipv4first");
 
+import * as path from "path";
 import * as dotenv from "dotenv";
 dotenv.config();
+if (!process.env.DATABASE_URL) {
+  dotenv.config({ path: path.resolve(__dirname, "../.env") });
+}
 
 import { Pool, Client } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
