@@ -74,32 +74,13 @@ export default function SettingsPage() {
     }
   }, [user]);
 
-  // Appearance State
-  const [theme, setTheme] = React.useState<"light" | "dark" | "auto">("auto");
-
+  // Clean up any residual dark mode class
   React.useEffect(() => {
     try {
-      const savedTheme = localStorage.getItem("folio-theme") as "light" | "dark" | "auto" | null;
-      if (savedTheme) {
-        setTheme(savedTheme);
-      }
+      localStorage.removeItem("folio-theme");
+      document.documentElement.classList.remove("dark");
     } catch {}
   }, []);
-
-  const handleThemeChange = (newTheme: "light" | "dark" | "auto") => {
-    setTheme(newTheme);
-    try {
-      localStorage.setItem("folio-theme", newTheme);
-      if (newTheme === "dark") {
-        document.documentElement.classList.add("dark");
-      } else if (newTheme === "light") {
-        document.documentElement.classList.remove("dark");
-      } else {
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        document.documentElement.classList.toggle("dark", prefersDark);
-      }
-    } catch {}
-  };
 
   // Notifications Toggle State
   const [notifications, setNotifications] = React.useState({
@@ -508,7 +489,7 @@ export default function SettingsPage() {
 
           {/* ROW 2: 3 CARDS (Appearance, Notifications, Folio Showcase) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
-            {/* CARD 1: Appearance (Theme & Global Accent Color) */}
+            {/* CARD 1: Appearance (Global Accent Color Selection) */}
             <div
               ref={appearanceRef}
               className="bg-white rounded-2xl border border-[#E5EAE7] p-5 shadow-2xs flex flex-col justify-between space-y-4"
@@ -523,67 +504,47 @@ export default function SettingsPage() {
                   </h4>
                 </div>
                 <p className="text-xs text-slate-400 font-medium pl-8">
-                  Customize the look and feel of Folio across all pages.
+                  Customize your accent color across all Folio pages.
                 </p>
 
-                <div className="space-y-4 pt-3">
-                  {/* Theme Switcher */}
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-500 mb-1.5 block">
-                      Theme
+                {/* Accent Color Selection (Global Across App) */}
+                <div className="space-y-3 pt-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold text-slate-600">
+                      Accent Color
                     </label>
-                    <div className="bg-slate-100 p-0.5 rounded-full flex text-xs font-semibold">
-                      {(["light", "dark", "auto"] as const).map((t) => (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() => handleThemeChange(t)}
-                          className={`flex-1 py-1 rounded-full transition-all capitalize cursor-pointer ${
-                            theme === t
-                              ? "bg-[#0D382B] text-white font-bold shadow-2xs"
-                              : "text-slate-600 hover:text-slate-900"
-                          }`}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
+                    <span className="text-[11px] font-semibold text-[#0D382B] bg-[#E8F2EC] px-2 py-0.5 rounded-full capitalize">
+                      {ACCENT_THEMES.find((c) => c.id === selectedAccent)?.label || "Folio Forest"}
+                    </span>
                   </div>
 
-                  {/* Accent Color Selection (Global Across App) */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-[11px] font-bold text-slate-500">
-                        Accent Color
-                      </label>
-                      <span className="text-[10px] font-semibold text-slate-400 capitalize">
-                        {ACCENT_THEMES.find((c) => c.id === selectedAccent)?.label || "Folio Forest"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between gap-1.5 pt-0.5">
-                      {ACCENT_THEMES.map((color) => {
-                        const isSelected = selectedAccent === color.id;
-                        return (
-                          <button
-                            key={color.id}
-                            type="button"
-                            onClick={() => {
-                              setAccent(color.id);
-                              toast.success(`Accent color updated to ${color.label}!`);
-                            }}
-                            style={{ backgroundColor: color.bg }}
-                            title={color.label}
-                            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                              isSelected
-                                ? "ring-2 ring-offset-2 ring-[#0D382B] scale-110 shadow-xs"
-                                : "hover:scale-105 opacity-90"
-                            }`}
-                          >
-                            {isSelected && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
-                          </button>
-                        );
-                      })}
-                    </div>
+                  <p className="text-[11px] text-slate-400 leading-snug">
+                    Select a theme palette for buttons, badges, highlights, and navigation.
+                  </p>
+
+                  <div className="flex items-center justify-between gap-1.5 pt-1">
+                    {ACCENT_THEMES.map((color) => {
+                      const isSelected = selectedAccent === color.id;
+                      return (
+                        <button
+                          key={color.id}
+                          type="button"
+                          onClick={() => {
+                            setAccent(color.id);
+                            toast.success(`Accent color updated to ${color.label}!`);
+                          }}
+                          style={{ backgroundColor: color.bg }}
+                          title={color.label}
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                            isSelected
+                              ? "ring-2 ring-offset-2 ring-[#0D382B] scale-110 shadow-xs"
+                              : "hover:scale-105 opacity-90"
+                          }`}
+                        >
+                          {isSelected && <Check className="w-4 h-4 text-white stroke-[3]" />}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
