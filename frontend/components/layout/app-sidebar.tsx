@@ -14,6 +14,8 @@ import {
   ArrowRight,
   BookOpen,
   ShieldCheck,
+  Sparkles,
+  CreditCard,
 } from "lucide-react";
 import {
   Sidebar,
@@ -136,8 +138,47 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
 
+          {/* Upgrade Callout Card (Visible for non-Pro users) */}
+          {user?.tier !== "pro" ? (
+            <div className="pt-1 group-data-[collapsible=icon]:hidden">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0D382B] to-[#174e3d] p-3.5 text-white shadow-sm border border-emerald-950/20">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="p-1 rounded-lg bg-emerald-400/20 text-emerald-300">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+                  </div>
+                  <h5 className="text-xs font-bold text-white">The Master Scholar</h5>
+                </div>
+                <p className="text-[10px] text-emerald-100/80 leading-snug mb-3">
+                  Unlimited StudyBuddies, priority AI, and CBE / Telebirr payments.
+                </p>
+                <Link
+                  href="/dashboard/pricing"
+                  className="w-full inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl bg-white text-[#0D382B] hover:bg-emerald-50 text-xs font-bold shadow-2xs transition-all active:scale-95"
+                >
+                  <CreditCard className="w-3.5 h-3.5 text-emerald-800" />
+                  <span>Upgrade (500 ETB)</span>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="pt-1 group-data-[collapsible=icon]:hidden">
+              <Link
+                href="/dashboard/pricing"
+                className="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-100/70 border border-emerald-200 text-[#0D382B] hover:bg-emerald-100 transition-colors"
+              >
+                <span className="text-xs font-bold flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+                  Master Scholar Active
+                </span>
+                <span className="text-[10px] text-emerald-800 underline font-semibold">
+                  Manage
+                </span>
+              </Link>
+            </div>
+          )}
+
           {/* Streak Card: Keep going! (Folio Statue Character) */}
-          <div className="pt-2 group-data-[collapsible=icon]:hidden">
+          <div className="pt-1 group-data-[collapsible=icon]:hidden">
             <div className="relative overflow-hidden rounded-2xl bg-[#0C382C] p-3 text-white shadow-sm border border-emerald-950/20">
               <div className="flex items-center gap-2.5">
                 {/* Character Avatar */}
@@ -196,21 +237,41 @@ export function AppSidebar() {
           )}
 
           {/* User Profile Row */}
-          <div className="flex items-center justify-between px-2 py-1.5 rounded-xl hover:bg-slate-100/60 transition-colors group-data-[collapsible=icon]:justify-center">
+          <Link
+            href="/dashboard/settings"
+            className="flex items-center justify-between px-2 py-1.5 rounded-xl hover:bg-slate-100/60 transition-colors group-data-[collapsible=icon]:justify-center cursor-pointer"
+          >
             <div className="flex items-center gap-2.5 overflow-hidden">
-              <div className="h-8 w-8 rounded-full bg-[#0D382B] text-white flex items-center justify-center text-xs font-bold shrink-0">
-                {userInitial}
-              </div>
+              {user?.image ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={user.image}
+                  alt={userName}
+                  className="h-8 w-8 rounded-full object-cover border border-[#0D382B]/20 shadow-2xs shrink-0"
+                />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-[#0D382B] text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0">
+                  {userInitial}
+                </div>
+              )}
               <div className="flex-1 overflow-hidden group-data-[collapsible=icon]:hidden">
-                <p className="text-xs font-bold text-slate-900 truncate">{userName}</p>
-                <p className="text-[10px] text-slate-400 truncate">{userEmail}</p>
+                <p className="text-xs font-bold text-slate-900 truncate leading-tight">{userName}</p>
+                <p className="text-[10px] text-slate-400 truncate leading-tight">{userEmail}</p>
               </div>
             </div>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-data-[collapsible=icon]:hidden" />
-          </div>
+          </Link>
 
-          {/* Settings & Sign Out */}
+          {/* Pricing, Settings & Sign Out */}
           <div className="space-y-0.5 pt-1">
+            <Link
+              href="/dashboard/pricing"
+              className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100/60 text-xs font-medium transition-colors group-data-[collapsible=icon]:justify-center"
+            >
+              <CreditCard className="w-4 h-4 text-slate-400 shrink-0" />
+              <span className="group-data-[collapsible=icon]:hidden">Membership & Pricing</span>
+            </Link>
+
             <Link
               href="/dashboard/settings"
               className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100/60 text-xs font-medium transition-colors group-data-[collapsible=icon]:justify-center"

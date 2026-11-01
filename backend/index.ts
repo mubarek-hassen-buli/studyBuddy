@@ -12,6 +12,7 @@ import { chatRoutes } from "./routes/chat";
 import { learningRoutes } from "./routes/learning";
 import { sessionsRoutes } from "./routes/sessions";
 import { subscriptionsRoutes } from "./routes/subscriptions";
+import { userRoutes } from "./routes/user";
 import { adminRoutes } from "./routes/admin";
 
 const app = new Elysia({ adapter: node() })
@@ -26,6 +27,7 @@ const app = new Elysia({ adapter: node() })
     exposeHeaders: ["Set-Cookie"]
   }))
   .use(authRoutes)
+  .use(userRoutes)
   .use(studyBuddyRoutes)
   .use(documentRoutes)
   .use(chatRoutes)

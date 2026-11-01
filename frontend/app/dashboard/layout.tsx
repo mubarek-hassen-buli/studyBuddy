@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useAuthStore } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { Search } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import { MiniTimerPill } from "@/components/dashboard/mini-timer-pill";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
 
@@ -65,27 +66,60 @@ export default function DashboardLayout({
               </div>
             </div>
 
-            {/* Header Right: MiniTimer + Notification Bell + User Profile */}
-            <div className="flex items-center gap-3 sm:gap-4">
+            {/* Header Right: Upgrade Button + MiniTimer + Notification Bell + User Profile */}
+            <div className="flex items-center gap-2.5 sm:gap-3.5">
+              {/* Prominent Upgrade Button for non-Pro users */}
+              {user?.tier !== "pro" ? (
+                <Link
+                  href="/dashboard/pricing"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-amber-950 bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 hover:from-amber-300 hover:to-amber-200 border border-amber-300 shadow-2xs transition-all active:scale-95 shrink-0"
+                  title="Upgrade to The Master Scholar (500 ETB)"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                  <span>Upgrade</span>
+                </Link>
+              ) : (
+                <Link
+                  href="/dashboard/pricing"
+                  className="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-[#0D382B] border border-emerald-300 hover:bg-emerald-200 transition-colors"
+                  title="Master Scholar Active"
+                >
+                  <Sparkles className="w-3 h-3 text-emerald-600" />
+                  Pro
+                </Link>
+              )}
+
               <MiniTimerPill />
 
               {/* Interactive Notification Bell with Popover */}
               <NotificationBell />
 
-              {/* User Profile Capsule */}
-              <div className="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-[#E5EAE7]">
-                <div className="h-8 w-8 rounded-full bg-[#0D382B] text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0">
-                  {user?.name?.charAt(0).toUpperCase() || "M"}
-                </div>
+              {/* User Profile Capsule with Avatar / Initials */}
+              <Link
+                href="/dashboard/settings"
+                className="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-[#E5EAE7] hover:opacity-90 transition-opacity"
+              >
+                {user?.image ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={user.image}
+                    alt={user.name || "User Avatar"}
+                    className="h-8 w-8 rounded-full object-cover border border-[#0D382B]/20 shadow-xs shrink-0"
+                  />
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-[#0D382B] text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0">
+                    {user?.name?.charAt(0).toUpperCase() || "M"}
+                  </div>
+                )}
                 <div className="hidden sm:flex flex-col text-left">
                   <span className="text-xs font-bold text-slate-900 leading-tight">
                     {user?.name || "Mubarek Hassen"}
                   </span>
                   <span className="text-[10px] text-slate-400 font-medium">
-                    Student
+                    {user?.tier === "pro" ? "Master Scholar" : "Student"}
                   </span>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         </header>

@@ -109,10 +109,14 @@ export const processDocument = async (documentId: string, fileBuffer: Buffer, fi
   }
 };
 
-export const uploadToImageKit = async (fileName: string, fileBuffer: Buffer) => {
+export const uploadToImageKit = async (
+    fileName: string,
+    fileBuffer: Buffer,
+    folder = "/studybuddy_docs"
+) => {
     return await imagekit.upload({
         file: fileBuffer,
         fileName: fileName,
-        folder: "/studybuddy_docs"
+        folder: folder
     });
 };

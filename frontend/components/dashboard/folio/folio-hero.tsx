@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { Sparkles } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 
 export function FolioHero() {
@@ -36,6 +38,27 @@ export function FolioHero() {
           <p className="text-xs sm:text-sm text-slate-500 max-w-md mt-3 leading-relaxed font-medium">
             Upload your notes, PDFs, or anything you&apos;re studying, and I&apos;ll help you create flashcards, quizzes, and more.
           </p>
+
+          {/* Quick Upgrade Button on Main Dashboard */}
+          {user?.tier !== "pro" ? (
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Link
+                href="/dashboard/pricing"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#0D382B] hover:bg-[#07251C] shadow-xs hover:shadow transition-all active:scale-95"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Upgrade to Master Scholar</span>
+              </Link>
+              <span className="text-[11px] text-slate-400 font-medium">
+                500 ETB / month • CBE & Telebirr
+              </span>
+            </div>
+          ) : (
+            <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-xs font-semibold text-[#0D382B]">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Master Scholar Active</span>
+            </div>
+          )}
         </div>
 
         {/* Right: Character Illustration & Speech Bubble */}

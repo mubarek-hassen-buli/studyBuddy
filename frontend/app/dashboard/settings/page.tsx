@@ -20,9 +20,11 @@ import {
   ShieldAlert,
   Eye,
   EyeOff,
+  UploadCloud,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 import { authClient } from "@/lib/auth-client";
+import { api } from "@/lib/api/client";
 import { useAccentStore, ACCENT_THEMES } from "@/store/accent-store";
 import { toast } from "sonner";
 import {
@@ -123,6 +125,81 @@ export default function SettingsPage() {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [photoModalOpen, setPhotoModalOpen] = React.useState(false);
 
+  // Avatar upload states
+  const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = React.useState(false);
+  const [isRemovingAvatar, setIsRemovingAvatar] = React.useState(false);
+
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file (JPEG, PNG, or WEBP)");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Avatar image must be under 5MB");
+      return;
+    }
+
+    setAvatarFile(file);
+    const objectUrl = URL.createObjectURL(file);
+    setAvatarPreview(objectUrl);
+  };
+
+  const handleUploadAvatar = async () => {
+    if (!avatarFile) {
+      toast.error("Please select an image file first");
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append("avatar", avatarFile);
+      const res = await api.upload("/user/avatar", formData);
+
+      if (res?.imageUrl) {
+        await checkSession();
+        toast.success("Profile photo updated successfully!");
+        setPhotoModalOpen(false);
+        setAvatarFile(null);
+        if (avatarPreview) {
+          URL.revokeObjectURL(avatarPreview);
+          setAvatarPreview(null);
+        }
+      } else {
+        toast.error("Failed to update profile photo");
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || err?.message || "Failed to upload avatar");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setIsRemovingAvatar(true);
+    try {
+      await api.delete("/user/avatar");
+      await checkSession();
+      toast.success("Profile photo removed successfully");
+      setPhotoModalOpen(false);
+      setAvatarFile(null);
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview);
+        setAvatarPreview(null);
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || err?.message || "Failed to remove avatar");
+    } finally {
+      setIsRemovingAvatar(false);
+    }
+  };
+
   // Password fields & status
   const [currentPassword, setCurrentPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
@@ -151,6 +228,11 @@ export default function SettingsPage() {
     setIsSavingProfile(true);
     try {
       await authClient.updateUser({ name: fullName });
+      try {
+        await api.patch("/user/profile", { name: fullName });
+      } catch (e) {
+        console.warn("Backend profile sync note:", e);
+      }
       await checkSession();
       toast.success("Account information saved successfully!");
     } catch {
@@ -333,9 +415,18 @@ export default function SettingsPage() {
                 {/* Avatar with Edit Badge */}
                 <div className="mb-4">
                   <div className="relative inline-block">
-                    <div className="w-14 h-14 rounded-full bg-[#11231B] text-white flex items-center justify-center font-bold text-xl shadow-xs select-none">
-                      {initialLetter}
-                    </div>
+                    {user?.image ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={user.image}
+                        alt={fullName}
+                        className="w-14 h-14 rounded-full object-cover border-2 border-[#0D382B]/20 shadow-xs"
+                      />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full bg-[#11231B] text-white flex items-center justify-center font-bold text-xl shadow-xs select-none">
+                        {initialLetter}
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={() => setPhotoModalOpen(true)}
@@ -905,7 +996,19 @@ export default function SettingsPage() {
       </Dialog>
 
       {/* Change Photo Dialog */}
-      <Dialog open={photoModalOpen} onOpenChange={setPhotoModalOpen}>
+      <Dialog
+        open={photoModalOpen}
+        onOpenChange={(open) => {
+          setPhotoModalOpen(open);
+          if (!open) {
+            setAvatarFile(null);
+            if (avatarPreview) {
+              URL.revokeObjectURL(avatarPreview);
+              setAvatarPreview(null);
+            }
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md rounded-3xl bg-white border border-[#E5EAE7] p-6 shadow-xl">
           <DialogHeader>
             <div className="w-10 h-10 rounded-xl bg-[#E8F2EC] text-[#0D382B] flex items-center justify-center mx-auto mb-2">
@@ -915,34 +1018,91 @@ export default function SettingsPage() {
               Update Profile Avatar
             </DialogTitle>
             <DialogDescription className="text-center text-xs text-slate-500">
-              Choose an avatar color or initial for your Folio desk.
+              Upload a clear photo to personalize your Folio account.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex items-center justify-center py-4">
-            <div className="w-20 h-20 rounded-full bg-[#11231B] text-white flex items-center justify-center font-bold text-3xl shadow-md">
-              {initialLetter}
+          <div className="space-y-4 py-2">
+            {/* Current / Preview Avatar Display */}
+            <div className="flex flex-col items-center justify-center">
+              {avatarPreview ? (
+                <div className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={avatarPreview}
+                    alt="Preview"
+                    className="w-24 h-24 rounded-full object-cover border-3 border-[#0D382B] shadow-md"
+                  />
+                  <span className="absolute bottom-0 right-0 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#0D382B] text-white">
+                    New
+                  </span>
+                </div>
+              ) : user?.image ? (
+                <div className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={user.image}
+                    alt={fullName}
+                    className="w-24 h-24 rounded-full object-cover border-2 border-slate-200 shadow-md"
+                  />
+                </div>
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-[#11231B] text-white flex items-center justify-center font-bold text-3xl shadow-md">
+                  {initialLetter}
+                </div>
+              )}
             </div>
+
+            {/* File Input / Dropzone */}
+            <label className="border-2 border-dashed border-slate-200 hover:border-[#0D382B] rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all bg-slate-50/50 hover:bg-slate-50">
+              <UploadCloud className="w-6 h-6 text-slate-400 mb-1" />
+              <span className="text-xs font-bold text-slate-700">
+                {avatarFile ? avatarFile.name : "Choose an image from your computer"}
+              </span>
+              <span className="text-[10px] text-slate-400 mt-0.5">
+                PNG, JPG, or WEBP up to 5MB
+              </span>
+              <input
+                type="file"
+                accept="image/png, image/jpeg, image/jpg, image/webp"
+                onChange={handleAvatarFileChange}
+                className="hidden"
+              />
+            </label>
           </div>
 
-          <DialogFooter className="flex sm:justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => setPhotoModalOpen(false)}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
-            >
-              Close
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                toast.success("Avatar updated!");
-                setPhotoModalOpen(false);
-              }}
-              className="px-4 py-2 rounded-xl bg-[#0D382B] text-white text-xs font-bold hover:bg-[#07251C] cursor-pointer"
-            >
-              Confirm
-            </button>
+          <DialogFooter className="flex sm:justify-between items-center gap-2 pt-2 border-t border-slate-100">
+            {user?.image ? (
+              <button
+                type="button"
+                disabled={isRemovingAvatar || isUploadingAvatar}
+                onClick={handleRemoveAvatar}
+                className="px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+              >
+                {isRemovingAvatar ? "Removing..." : "Remove Photo"}
+              </button>
+            ) : (
+              <div />
+            )}
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPhotoModalOpen(false)}
+                disabled={isUploadingAvatar || isRemovingAvatar}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!avatarFile || isUploadingAvatar || isRemovingAvatar}
+                onClick={handleUploadAvatar}
+                className="px-4 py-2 rounded-xl bg-[#0D382B] hover:bg-[#07251C] text-white text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {isUploadingAvatar ? "Uploading..." : "Save Avatar"}
+              </button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
