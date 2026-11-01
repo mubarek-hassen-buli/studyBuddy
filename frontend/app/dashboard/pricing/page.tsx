@@ -113,7 +113,8 @@ export default function PricingPage() {
       setIsUploading(true);
       // 1. Upload receipt to ImageKit
       const uploadRes = await subscriptionApi.uploadReceipt(receiptFile);
-      if (!uploadRes.receiptUrl) {
+      const receiptUrl = uploadRes?.receiptUrl || (uploadRes as any)?.url;
+      if (!receiptUrl) {
         throw new Error("Failed to upload receipt image. Please try again.");
       }
 
@@ -122,7 +123,7 @@ export default function PricingPage() {
         paymentMethod: selectedMethod,
         transactionReference: txRef.trim(),
         senderPhoneNumber: senderPhone.trim() || undefined,
-        receiptUrl: uploadRes.receiptUrl,
+        receiptUrl: receiptUrl,
         amount: paymentInfo?.price || 500,
         currency: paymentInfo?.currency || "ETB",
       });

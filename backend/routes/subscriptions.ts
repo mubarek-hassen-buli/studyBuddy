@@ -27,7 +27,7 @@ export const subscriptionsRoutes = new Elysia({ prefix: "/api/subscriptions" })
   })
 
   // 2. Upload payment receipt screenshot
-  .post("/upload-receipt", async ({ request, set }) => {
+  .post("/upload-receipt", async ({ request, body, set }) => {
     try {
       const session = await auth.api.getSession({ headers: request.headers });
       if (!session?.user?.id) {
@@ -35,29 +35,48 @@ export const subscriptionsRoutes = new Elysia({ prefix: "/api/subscriptions" })
         return { error: "Unauthorized", message: "Authentication required" };
       }
 
-      const formData = await request.formData();
-      const file = formData.get("receipt") as File | null;
+      // Elysia parses multipart/form-data into body
+      const payload = body as Record<string, unknown> | undefined;
+      let file = (payload?.receipt || payload?.file) as File | null | undefined;
 
+      // Fallback: in case body parser didn't run, check request.formData()
       if (!file) {
+        try {
+          const formData = await request.formData();
+          file = (formData.get("receipt") || formData.get("file")) as File | null;
+        } catch {
+          // Stream might have already been consumed
+        }
+      }
+
+      if (!file || typeof file.arrayBuffer !== "function") {
         set.status = 400;
         return { error: "BadRequest", message: "Receipt image file is required" };
       }
 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const safeName = `receipt_${session.user.id}_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      const safeName = `receipt_${session.user.id}_${Date.now()}_${(file.name || "receipt.png").replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 
-      const uploadResult = await uploadToImageKit(safeName, buffer);
+      const uploadResult = await uploadToImageKit(safeName, buffer, "/studybuddy_receipts");
+
+      if (!uploadResult?.url) {
+        set.status = 500;
+        return { error: "UploadError", message: "Failed to upload receipt screenshot to storage" };
+      }
 
       return {
+        success: true,
+        receiptUrl: uploadResult.url,
         url: uploadResult.url,
+        fileName: safeName,
       };
     } catch (error) {
       console.error("[Subscriptions] Receipt upload failed:", error);
       set.status = 500;
       return {
         error: "InternalServerError",
-        message: "Failed to upload receipt screenshot",
+        message: error instanceof Error ? error.message : "Failed to upload receipt screenshot",
       };
     }
   })

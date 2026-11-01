@@ -7,7 +7,7 @@ import { uploadToImageKit } from "../services/document-processor";
 
 export const userRoutes = new Elysia({ prefix: "/api/user" })
   // 1. Upload & update profile avatar
-  .post("/avatar", async ({ request, set }) => {
+  .post("/avatar", async ({ request, body, set }) => {
     try {
       const session = await auth.api.getSession({ headers: request.headers });
       if (!session?.user?.id) {
@@ -15,15 +15,25 @@ export const userRoutes = new Elysia({ prefix: "/api/user" })
         return { error: "Unauthorized", message: "Authentication required" };
       }
 
-      const formData = await request.formData();
-      const file = formData.get("avatar") as File | null;
+      // Elysia parses multipart into body
+      const payload = body as Record<string, unknown> | undefined;
+      let file = (payload?.avatar || payload?.file) as File | null | undefined;
 
       if (!file) {
+        try {
+          const formData = await request.formData();
+          file = (formData.get("avatar") || formData.get("file")) as File | null;
+        } catch {
+          // Stream might have already been consumed
+        }
+      }
+
+      if (!file || typeof file.arrayBuffer !== "function") {
         set.status = 400;
         return { error: "BadRequest", message: "Avatar image file is required" };
       }
 
-      if (!file.type.startsWith("image/")) {
+      if (file.type && !file.type.startsWith("image/")) {
         set.status = 400;
         return {
           error: "BadRequest",
@@ -39,7 +49,7 @@ export const userRoutes = new Elysia({ prefix: "/api/user" })
 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const safeName = `avatar_${session.user.id}_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      const safeName = `avatar_${session.user.id}_${Date.now()}_${(file.name || "avatar.png").replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 
       const uploadResult = await uploadToImageKit(safeName, buffer, "/studybuddy_avatars");
 
