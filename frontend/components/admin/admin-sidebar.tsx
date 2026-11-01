@@ -13,6 +13,7 @@ import {
   LogOut,
   BookOpen,
   Sparkles,
+  CreditCard,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { AdminUser } from "@/types/admin";
@@ -48,6 +49,12 @@ export function AdminSidebar({ adminUser }: AdminSidebarProps) {
       href: "/admin/materials",
       icon: FileText,
       description: "Documents & Vectors",
+    },
+    {
+      name: "Subscriptions",
+      href: "/admin/subscriptions",
+      icon: CreditCard,
+      description: "Payment Verification",
     },
     {
       name: "Audit Trail",

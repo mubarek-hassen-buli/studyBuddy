@@ -10,3 +10,4 @@ export * from "./usage";
 export * from "./sessions";
 export * from "./relations";
 export * from "./audit-logs";
+export * from "./subscriptions";

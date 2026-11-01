@@ -4,6 +4,7 @@ import { adminAnalyticsRoutes } from "./analytics";
 import { adminUsersRoutes } from "./users";
 import { adminMaterialsRoutes } from "./materials";
 import { adminAuditLogsRoutes } from "./audit-logs";
+import { adminSubscriptionsRoutes } from "./subscriptions";
 
 export const adminRoutes = new Elysia({ prefix: "/api/admin" })
   .use(adminGuard)
@@ -29,4 +30,5 @@ export const adminRoutes = new Elysia({ prefix: "/api/admin" })
   .use(adminAnalyticsRoutes)
   .use(adminUsersRoutes)
   .use(adminMaterialsRoutes)
-  .use(adminAuditLogsRoutes);
+  .use(adminAuditLogsRoutes)
+  .use(adminSubscriptionsRoutes);

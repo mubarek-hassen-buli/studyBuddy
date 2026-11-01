@@ -8,6 +8,7 @@ import {
   quizzes,
   quizAttempts,
   studySessions,
+  subscriptionRequests,
 } from "../../db/schema";
 import { count, sum, eq, gte } from "drizzle-orm";
 import { adminGuard } from "../../middleware/admin-guard";
@@ -39,6 +40,8 @@ export const adminAnalyticsRoutes = new Elysia({ prefix: "/analytics" })
         [quizzesRow],
         [quizAttemptsRow],
         [sessionsStatsRow],
+        [pendingSubscriptionsRow],
+        [approvedSubscriptionsRow],
       ] = await Promise.all([
         db.select({ value: count() }).from(users),
         db.select({ value: count() }).from(users).where(eq(users.role, "super_admin")),
@@ -61,6 +64,8 @@ export const adminAnalyticsRoutes = new Elysia({ prefix: "/analytics" })
           count: count(),
           totalDurationSeconds: sum(studySessions.actualDurationSeconds),
         }).from(studySessions),
+        db.select({ value: count() }).from(subscriptionRequests).where(eq(subscriptionRequests.status, "pending")),
+        db.select({ value: count() }).from(subscriptionRequests).where(eq(subscriptionRequests.status, "approved")),
       ]);
 
       const totalStorageBytes = Number(docsStatsRow?.totalBytes || 0);
@@ -93,6 +98,10 @@ export const adminAnalyticsRoutes = new Elysia({ prefix: "/analytics" })
           quizAttempts: quizAttemptsRow?.value || 0,
           studySessions: sessionsStatsRow?.count || 0,
           studyMinutes: Math.round(totalDurationSeconds / 60),
+        },
+        subscriptions: {
+          pending: pendingSubscriptionsRow?.value || 0,
+          approved: approvedSubscriptionsRow?.value || 0,
         },
         timestamp: new Date().toISOString(),
       };

@@ -9,14 +9,16 @@ import { summaries } from "./summaries";
 import { usage } from "./usage";
 import { studySessions } from "./sessions";
 import { messages, chatConversations } from "./messages";
+import { subscriptionRequests } from "./subscriptions";
 
-// Users -> StudyBuddies, Usage, StudySessions, QuizAttempts, ChatConversations
+// Users -> StudyBuddies, Usage, StudySessions, QuizAttempts, ChatConversations, SubscriptionRequests
 export const usersRelations = relations(users, ({ many }) => ({
   studyBuddies: many(studyBuddies),
   usage: many(usage),
   studySessions: many(studySessions),
   quizAttempts: many(quizAttempts),
   chatConversations: many(chatConversations),
+  subscriptionRequests: many(subscriptionRequests),
 }));
 
 // StudyBuddies -> User, Documents, Flashcards, Quizzes, Summaries, StudySessions, Messages, ChatConversations
@@ -133,3 +135,14 @@ export const studySessionsRelations = relations(studySessions, ({ one }) => ({
   }),
 }));
 
+// SubscriptionRequests -> User, SubscriptionRequests -> Reviewer
+export const subscriptionRequestsRelations = relations(subscriptionRequests, ({ one }) => ({
+  user: one(users, {
+    fields: [subscriptionRequests.userId],
+    references: [users.id],
+  }),
+  reviewer: one(users, {
+    fields: [subscriptionRequests.reviewedBy],
+    references: [users.id],
+  }),
+}));

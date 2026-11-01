@@ -17,6 +17,7 @@ import {
   TrendingUp,
   AlertCircle,
   RefreshCw,
+  CreditCard,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -274,7 +275,7 @@ export default function AdminOverviewPage() {
       </div>
 
       {/* Quick Navigation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link
           href="/admin/users"
           className="p-5 bg-white rounded-2xl border border-[#E5EAE7] hover:border-[#0D382B]/30 hover:shadow-xs transition-all group flex flex-col justify-between"
@@ -287,11 +288,42 @@ export default function AdminOverviewPage() {
               User Directory
             </h4>
             <p className="text-xs text-slate-500 mt-1">
-              Browse {users.total} registered users, toggle subscriptions, grant super admin status, or suspend accounts.
+              Browse {users.total} registered users, toggle subscriptions, or manage accounts.
             </p>
           </div>
           <div className="flex items-center gap-1.5 text-xs font-semibold text-[#0D382B] mt-4 pt-3 border-t border-slate-100">
             <span>Manage users</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </Link>
+
+        <Link
+          href="/admin/subscriptions"
+          className="p-5 bg-white rounded-2xl border border-[#E5EAE7] hover:border-[#0D382B]/30 hover:shadow-xs transition-all group flex flex-col justify-between"
+        >
+          <div>
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center mb-3 relative">
+              <CreditCard className="w-5 h-5" />
+              {(data?.subscriptions?.pending ?? 0) > 0 && (
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 border-2 border-white animate-pulse" />
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <h4 className="font-serif text-base font-bold text-slate-900 group-hover:text-amber-800 transition-colors">
+                Subscriptions
+              </h4>
+              {(data?.subscriptions?.pending ?? 0) > 0 && (
+                <span className="px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300">
+                  {data?.subscriptions?.pending} new
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Verify CBE & Telebirr receipts, approve Pro upgrades, or reject with notes.
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-800 mt-4 pt-3 border-t border-slate-100">
+            <span>Review payments</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
         </Link>
@@ -308,7 +340,7 @@ export default function AdminOverviewPage() {
               Materials Catalog
             </h4>
             <p className="text-xs text-slate-500 mt-1">
-              Inspect {content.documents} uploaded documents ({content.storageMegabytes} MB), vector chunking status, and perform administrative purges.
+              Inspect {content.documents} uploaded documents ({content.storageMegabytes} MB).
             </p>
           </div>
           <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-800 mt-4 pt-3 border-t border-slate-100">
@@ -329,7 +361,7 @@ export default function AdminOverviewPage() {
               Security Audit Trail
             </h4>
             <p className="text-xs text-slate-500 mt-1">
-              Immutable ledger of all role alterations, subscription overrides, suspensions, and administrative deletions.
+              Immutable ledger of role alterations, subscriptions, and deletions.
             </p>
           </div>
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 mt-4 pt-3 border-t border-slate-100">

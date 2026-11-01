@@ -347,26 +347,65 @@ export const studyBuddyRoutes = new Elysia({ prefix: "/api/studybuddy" })
 
       const { name, subject, description } = parsed.data;
       
-      // --- LIMIT CHECK ---
-      const [dbUser] = await db.select({ tier: users.tier }).from(users).where(eq(users.id, user!.id));
-      const buddyCount = await db.select({ value: count() }).from(studyBuddies).where(eq(studyBuddies.userId, user!.id));
-      
-      if (dbUser?.tier === "free" && Number(buddyCount[0].value) >= 3) {
-        set.status = 403;
-        return { message: "Free tier limit reached (Max 3 StudyBuddies). Upgrade to Pro for unlimited buddies." };
+      // --- OPTION A QUOTA BARRIER (CLOSES DELETION LOOPHOLE) ---
+      const [dbUser] = await db
+        .select({
+          tier: users.tier,
+          buddiesCreatedCount: users.buddiesCreatedCount,
+        })
+        .from(users)
+        .where(eq(users.id, user!.id));
+
+      const buddyCount = await db
+        .select({ value: count() })
+        .from(studyBuddies)
+        .where(eq(studyBuddies.userId, user!.id));
+
+      if (dbUser?.tier === "free") {
+        // 1. Active concurrent slots limit
+        if (Number(buddyCount[0]?.value || 0) >= 3) {
+          set.status = 403;
+          return {
+            message: "Free tier active limit reached: You can have at most 3 active StudyBuddies at the same time. Upgrade to Master Scholar (Pro) for unlimited buddies.",
+          };
+        }
+
+        // 2. Option A lifetime creation quota limit (Closes deletion exploit)
+        if ((dbUser.buddiesCreatedCount || 0) >= 3) {
+          set.status = 403;
+          return {
+            message: "Free tier creation limit reached: You have used all 3 of your free StudyBuddy creations. Upgrade to Master Scholar (Pro) for unlimited creations.",
+          };
+        }
       }
-      // -------------------
+      // ----------------------------------------------------------
 
       // Generate isolated Qdrant collection name
       const qdrantCollectionName = `sb_${user!.id}_${Date.now()}`;
 
-      const [newBuddy] = await db.insert(studyBuddies).values({
-        userId: user!.id,
-        name,
-        subject,
-        description,
-        qdrantCollectionName,
-      }).returning();
+      // Atomically insert buddy and increment creation quota
+      const newBuddy = await db.transaction(async (tx) => {
+        const [buddy] = await tx
+          .insert(studyBuddies)
+          .values({
+            userId: user!.id,
+            name,
+            subject,
+            description,
+            qdrantCollectionName,
+          })
+          .returning();
+
+        await tx
+          .update(users)
+          .set({
+            buddiesCreatedCount: (dbUser?.buddiesCreatedCount || 0) + 1,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, user!.id));
+
+        return buddy;
+      });
 
       // Create Qdrant collection
       await qdrantService.createCollection(qdrantCollectionName);
@@ -389,26 +428,65 @@ export const studyBuddyRoutes = new Elysia({ prefix: "/api/studybuddy" })
 
       const { name, subject, description } = parsed.data;
       
-      // --- LIMIT CHECK ---
-      const [dbUser] = await db.select({ tier: users.tier }).from(users).where(eq(users.id, user!.id));
-      const buddyCount = await db.select({ value: count() }).from(studyBuddies).where(eq(studyBuddies.userId, user!.id));
-      
-      if (dbUser?.tier === "free" && Number(buddyCount[0].value) >= 3) {
-        set.status = 403;
-        return { message: "Free tier limit reached (Max 3 StudyBuddies). Upgrade to Pro for unlimited buddies." };
+      // --- OPTION A QUOTA BARRIER (CLOSES DELETION LOOPHOLE) ---
+      const [dbUser] = await db
+        .select({
+          tier: users.tier,
+          buddiesCreatedCount: users.buddiesCreatedCount,
+        })
+        .from(users)
+        .where(eq(users.id, user!.id));
+
+      const buddyCount = await db
+        .select({ value: count() })
+        .from(studyBuddies)
+        .where(eq(studyBuddies.userId, user!.id));
+
+      if (dbUser?.tier === "free") {
+        // 1. Active concurrent slots limit
+        if (Number(buddyCount[0]?.value || 0) >= 3) {
+          set.status = 403;
+          return {
+            message: "Free tier active limit reached: You can have at most 3 active StudyBuddies at the same time. Upgrade to Master Scholar (Pro) for unlimited buddies.",
+          };
+        }
+
+        // 2. Option A lifetime creation quota limit (Closes deletion exploit)
+        if ((dbUser.buddiesCreatedCount || 0) >= 3) {
+          set.status = 403;
+          return {
+            message: "Free tier creation limit reached: You have used all 3 of your free StudyBuddy creations. Upgrade to Master Scholar (Pro) for unlimited creations.",
+          };
+        }
       }
-      // -------------------
+      // ----------------------------------------------------------
 
       // Generate isolated Qdrant collection name
       const qdrantCollectionName = `sb_${user!.id}_${Date.now()}`;
 
-      const [newBuddy] = await db.insert(studyBuddies).values({
-        userId: user!.id,
-        name,
-        subject,
-        description,
-        qdrantCollectionName,
-      }).returning();
+      // Atomically insert buddy and increment creation quota
+      const newBuddy = await db.transaction(async (tx) => {
+        const [buddy] = await tx
+          .insert(studyBuddies)
+          .values({
+            userId: user!.id,
+            name,
+            subject,
+            description,
+            qdrantCollectionName,
+          })
+          .returning();
+
+        await tx
+          .update(users)
+          .set({
+            buddiesCreatedCount: (dbUser?.buddiesCreatedCount || 0) + 1,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, user!.id));
+
+        return buddy;
+      });
 
       // Create Qdrant collection
       await qdrantService.createCollection(qdrantCollectionName);

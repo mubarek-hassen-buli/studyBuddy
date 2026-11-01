@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer } from "drizzle-orm/pg-core";
 
 export type UserRole = "user" | "super_admin";
 
@@ -12,6 +12,8 @@ export const users = pgTable("user", {
   banned: boolean("banned").default(false).notNull(),
   banReason: text("banReason"),
   banExpires: timestamp("banExpires"),
+  buddiesCreatedCount: integer("buddiesCreatedCount").default(0).notNull(),
+  subscriptionExpiresAt: timestamp("subscriptionExpiresAt"),
   image: text("image"),
   createdAt: timestamp("createdAt").notNull(),
   updatedAt: timestamp("updatedAt").notNull(),

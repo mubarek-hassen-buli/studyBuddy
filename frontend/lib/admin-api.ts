@@ -11,6 +11,9 @@ import {
   UserStatus,
   DocumentProcessingStatus,
   FileType,
+  SubscriptionRequestItem,
+  SubscriptionStatus,
+  PaymentMethod,
 } from "@/types/admin";
 
 export interface ListUsersParams {
@@ -36,6 +39,13 @@ export interface ListAuditLogsParams {
   action?: string;
   adminId?: string;
   targetId?: string;
+}
+
+export interface ListSubscriptionsParams {
+  page?: number;
+  limit?: number;
+  status?: "all" | SubscriptionStatus;
+  paymentMethod?: "all" | PaymentMethod;
 }
 
 export const adminApi = {
@@ -128,6 +138,36 @@ export const adminApi = {
 
     const queryStr = searchParams.toString();
     return api.get(`/admin/audit-logs${queryStr ? `?${queryStr}` : ""}`);
+  },
+
+  // Subscription Requests Management
+  getSubscriptions: async (
+    params: ListSubscriptionsParams = {}
+  ): Promise<{ requests: SubscriptionRequestItem[]; pagination: AdminPagination }> => {
+    const searchParams = new URLSearchParams();
+    if (params.page) searchParams.set("page", params.page.toString());
+    if (params.limit) searchParams.set("limit", params.limit.toString());
+    if (params.status && params.status !== "all") searchParams.set("status", params.status);
+    if (params.paymentMethod && params.paymentMethod !== "all") {
+      searchParams.set("paymentMethod", params.paymentMethod);
+    }
+
+    const queryStr = searchParams.toString();
+    return api.get(`/admin/subscriptions${queryStr ? `?${queryStr}` : ""}`);
+  },
+
+  approveSubscription: async (
+    id: string,
+    data: { adminNotes?: string } = {}
+  ): Promise<{ success: boolean; message: string; request: SubscriptionRequestItem }> => {
+    return api.post(`/admin/subscriptions/${id}/approve`, data);
+  },
+
+  rejectSubscription: async (
+    id: string,
+    data: { adminNotes?: string } = {}
+  ): Promise<{ success: boolean; message: string; request: SubscriptionRequestItem }> => {
+    return api.post(`/admin/subscriptions/${id}/reject`, data);
   },
 };
 

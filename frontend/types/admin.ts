@@ -19,6 +19,8 @@ export interface AdminUser {
   banReason?: string | null;
   banExpires?: string | null;
   image?: string | null;
+  buddiesCreatedCount?: number;
+  subscriptionExpiresAt?: string | null;
   createdAt: string;
   updatedAt: string;
   stats?: AdminUserStats;
@@ -91,6 +93,10 @@ export interface AdminAnalytics {
     studySessions: number;
     studyMinutes: number;
   };
+  subscriptions?: {
+    pending: number;
+    approved: number;
+  };
   timestamp: string;
 }
 
@@ -109,5 +115,66 @@ export interface AdminDocument {
   ownerId: string;
   ownerName: string;
   ownerEmail: string;
+}
+
+export type PaymentMethod = "cbe" | "telebirr";
+export type SubscriptionStatus = "pending" | "approved" | "rejected";
+
+export interface SubscriptionRequestItem {
+  id: string;
+  userId: string;
+  paymentMethod: PaymentMethod;
+  transactionReference: string;
+  senderPhoneNumber?: string | null;
+  receiptUrl: string;
+  amount: number;
+  currency: string;
+  status: SubscriptionStatus;
+  adminNotes?: string | null;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  userName: string;
+  userEmail: string;
+  userTier: UserTier;
+  userRole: UserRole;
+  userImage?: string | null;
+  subscriptionExpiresAt?: string | null;
+}
+
+export interface PaymentAccountDetails {
+  plan: string;
+  price: number;
+  currency: string;
+  interval: string;
+  cbe: {
+    accountNumber: string;
+    accountName: string;
+    bank: string;
+  };
+  telebirr: {
+    phoneNumber: string;
+    accountName: string;
+  };
+}
+
+export interface UserSubscriptionStatus {
+  tier: UserTier;
+  role: UserRole;
+  subscriptionExpiresAt?: string | null;
+  buddiesCreatedCount: number;
+  buddiesRemaining: number;
+  isExpired: boolean;
+  pendingRequest?: {
+    id: string;
+    paymentMethod: PaymentMethod;
+    transactionReference: string;
+    receiptUrl: string;
+    amount: number;
+    currency: string;
+    status: SubscriptionStatus;
+    createdAt: string;
+  } | null;
 }
 
