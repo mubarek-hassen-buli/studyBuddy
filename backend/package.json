@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "tsx watch index.ts",
+    "build": "tsc --noEmit",
     "start": "tsx index.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx db/migrate.ts",
@@ -32,6 +33,8 @@
     "pdf-parse": "^2.4.5",
     "pg": "^8.23.1",
     "pptx-text-parser": "^1.1.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.8.0",
     "ws": "^8.19.0",
     "zod": "^4.3.6"
   },
@@ -39,8 +42,6 @@
     "@types/node": "^20.19.0",
     "@types/pg": "^8.23.1",
     "@types/ws": "^8.18.1",
-    "drizzle-kit": "^0.31.8",
-    "tsx": "^4.21.0",
-    "typescript": "^5.8.0"
+    "drizzle-kit": "^0.31.8"
   }
 }

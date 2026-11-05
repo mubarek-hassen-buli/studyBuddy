@@ -15,6 +15,8 @@ import { subscriptionsRoutes } from "./routes/subscriptions";
 import { userRoutes } from "./routes/user";
 import { adminRoutes } from "./routes/admin";
 
+const port = Number(process.env.PORT) || 3001;
+
 const app = new Elysia({ adapter: node() })
   .use(cors({
     origin: [
@@ -36,10 +38,14 @@ const app = new Elysia({ adapter: node() })
   .use(subscriptionsRoutes)
   .use(adminRoutes)
   .get("/", () => "Hello from StudyBuddy API")
-  .listen(process.env.PORT || 3001);
+  .get("/health", () => ({ status: "ok", timestamp: new Date().toISOString() }))
+  .listen({
+    port,
+    hostname: "0.0.0.0",
+  });
 
 console.log(
-  `🦊 Elysia is running at http://localhost:3001 (StudyBuddy API)`
+  `🦊 Elysia is running on port ${port} at 0.0.0.0 (StudyBuddy API)`
 );
 
 export default app;

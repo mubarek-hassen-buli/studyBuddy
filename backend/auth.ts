@@ -35,10 +35,9 @@ export const auth = betterAuth({
     "http://localhost:3000",
     "http://localhost:3001",
     "https://study-buddy-self-ten.vercel.app",
-    "https://studybuddy-production-4127.up.railway.app",
-    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
+    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
   ],
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3001",
   secret: process.env.BETTER_AUTH_SECRET!,
 });
-

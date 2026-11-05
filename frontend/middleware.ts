@@ -3,8 +3,8 @@ import type { NextRequest } from "next/server";
 import { authClient } from "./lib/auth-client";
 
 export async function middleware(request: NextRequest) {
-  // NOTE: In a cross-domain setup (Vercel + Railway), the Vercel Middleware 
-  // cannot access cookies set by Railway. We rely on client-side 
+  // NOTE: In a cross-domain setup (Vercel + Render), the Vercel Middleware 
+  // cannot access cookies set by Render. We rely on client-side 
   // protection in DashboardLayout.tsx instead.
   
   /*
