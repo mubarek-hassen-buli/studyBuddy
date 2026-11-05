@@ -17,12 +17,19 @@ import { adminRoutes } from "./routes/admin";
 
 const port = Number(process.env.PORT) || 3001;
 
+const rawFrontend = process.env.FRONTEND_URL;
+const frontendUrl = rawFrontend && !rawFrontend.startsWith("srv-")
+  ? (rawFrontend.startsWith("http://") || rawFrontend.startsWith("https://") ? rawFrontend.replace(/\/$/, "") : `https://${rawFrontend.replace(/\/$/, "")}`)
+  : undefined;
+
 const app = new Elysia({ adapter: node() })
   .use(cors({
     origin: [
       "http://localhost:3000",
       "https://study-buddy-self-ten.vercel.app",
-      ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
+      "https://folio-s.vercel.app",
+      /\.vercel\.app$/,
+      ...(frontendUrl ? [frontendUrl] : [])
     ],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
