@@ -64,13 +64,13 @@ export const qdrantService = {
   // Search for similar vectors
   search: async (collectionName: string, vector: number[], limit: number = 5, threshold: number = 0.7) => {
       try {
-          const results = await client.search(collectionName, {
-              vector: vector,
+          const results = await client.query(collectionName, {
+              query: vector,
               limit: limit,
               score_threshold: threshold,
               with_payload: true,
           });
-          return results;
+          return results.points;
       } catch (error) {
            console.error("Error searching in Qdrant:", error);
            throw error;

@@ -30,11 +30,11 @@
     "imagekit": "^6.0.0",
     "mammoth": "^1.11.0",
     "officegen": "^0.6.5",
-    "pdf-parse": "^2.4.5",
     "pg": "^8.23.1",
     "pptx-text-parser": "^1.1.1",
     "tsx": "^4.21.0",
     "typescript": "^5.8.0",
+    "unpdf": "^2.1.0",
     "ws": "^8.19.0",
     "zod": "^4.3.6"
   },
